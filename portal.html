@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portal Pacientes – Centro Kairós</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --orange:#F4702A; --orange-l:#FCA96A; --orange-bg:rgba(244,112,42,.09);
+      --blue:#2D3A8C; --blue-d:#1a2260; --blue-bg:rgba(45,58,140,.08);
+      --sky:#5BB8D4; --sky-l:#C8EAF5; --sky-bg:rgba(91,184,212,.09);
+      --white:#fff; --off:#F7F8FC; --gray:#64748B; --dark:#0F1428;
+      --r:14px; --sh:0 8px 36px rgba(45,58,140,.12);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--dark);min-height:100vh}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:72px;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-bottom:1.5px solid rgba(91,184,212,.18);box-shadow:0 2px 24px rgba(45,58,140,.08)}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .nav-brand{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--blue)}
+    .nav-brand span{color:var(--orange)}
+    .nav-tag{font-size:.75rem;font-weight:600;color:var(--sky);letter-spacing:.08em;text-transform:uppercase}
+    .nav-back{font-size:.82rem;color:var(--gray);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+    .nav-back:hover{color:var(--blue)}
+
+    /* LOGIN SCREEN */
+    #loginScreen{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(140deg,var(--blue-d) 0%,var(--blue) 55%,#1e3a9e 100%);
+      padding:100px 5% 60px;position:relative;overflow:hidden;
+    }
+    .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+    .orb1{width:500px;height:500px;background:var(--sky);right:-100px;top:-100px;opacity:.13}
+    .orb2{width:360px;height:360px;background:var(--orange);bottom:-80px;left:20%;opacity:.08}
+    .login-card{
+      position:relative;z-index:2;background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(20px);
+      border-radius:28px;padding:56px 48px;width:100%;max-width:420px;
+      box-shadow:0 32px 80px rgba(0,0,0,.3);
+      animation:fadeUp .5s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes fadeUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .lc-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(91,184,212,.15);border:1px solid rgba(91,184,212,.3);color:var(--sky);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:6px 16px;border-radius:50px;margin-bottom:28px}
+    .lc-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--sky);animation:blink 2s infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .lc-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:white;line-height:1.1;margin-bottom:10px}
+    .lc-title em{color:var(--orange-l);font-style:normal}
+    .lc-sub{font-size:.9rem;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:36px}
+    .lc-grp{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+    .lc-grp label{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.04em}
+    .lc-grp input{
+      padding:14px 18px;border-radius:12px;
+      border:1.5px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.08);color:white;
+      font-family:'DM Sans',sans-serif;font-size:.97rem;
+      outline:none;transition:border-color .2s,background .2s;
+    }
+    .lc-grp input::placeholder{color:rgba(255,255,255,.3)}
+    .lc-grp input:focus{border-color:var(--sky);background:rgba(255,255,255,.12)}
+    .lc-err{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);color:#fca5a5;font-size:.82rem;padding:10px 14px;border-radius:10px;margin-bottom:16px;display:none}
+    .lc-btn{
+      width:100%;background:linear-gradient(135deg,var(--orange),#d95e1e);
+      color:white;border:none;cursor:pointer;padding:15px;border-radius:50px;
+      font-size:1rem;font-weight:700;font-family:'DM Sans',sans-serif;
+      box-shadow:0 6px 24px rgba(244,112,42,.4);transition:all .2s;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+    }
+    .lc-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(244,112,42,.55)}
+    .lc-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .lc-note{margin-top:20px;font-size:.76rem;color:rgba(255,255,255,.35);text-align:center;line-height:1.6}
+
+    /* PORTAL SCREEN */
+    #portalScreen{display:none;padding-top:88px;min-height:100vh}
+
+    /* HEADER DEL PACIENTE */
+    .pt-header{
+      background:linear-gradient(135deg,var(--blue-d),var(--blue));
+      padding:40px 5% 36px;color:white;
+    }
+    .pt-greeting{font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--sky);margin-bottom:6px}
+    .pt-name{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;margin-bottom:4px}
+    .pt-dni{font-size:.85rem;color:rgba(255,255,255,.5)}
+    .pt-logout{
+      float:right;margin-top:-60px;
+      background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+      color:rgba(255,255,255,.7);padding:8px 18px;border-radius:50px;
+      font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;
+      transition:all .2s;
+    }
+    .pt-logout:hover{background:rgba(255,255,255,.18);color:white}
+
+    /* CONTENIDO */
+    .pt-content{padding:36px 5%;max-width:1100px;margin:0 auto}
+
+    /* SIN RUTINAS */
+    .empty-state{text-align:center;padding:80px 20px}
+    .empty-icon{font-size:3rem;margin-bottom:16px;opacity:.4}
+    .empty-title{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--blue);margin-bottom:8px}
+    .empty-sub{font-size:.9rem;color:var(--gray);line-height:1.7}
+
+    /* RUTINA CARD */
+    .rutinas-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--blue);margin-bottom:6px}
+    .rutinas-sub{font-size:.85rem;color:var(--gray);margin-bottom:28px}
+    .rutina-card{
+      background:white;border-radius:20px;
+      box-shadow:var(--sh);margin-bottom:24px;overflow:hidden;
+    }
+    .rc-header{
+      background:linear-gradient(135deg,var(--blue-d),var(--blue));
+      padding:24px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    }
+    .rc-title{font-family:'Playfair Display',serif;font-size:1.15rem;color:white;font-weight:700}
+    .rc-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+    .rc-chip{
+      font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+      padding:4px 12px;border-radius:50px;
+    }
+    .chip-fase{background:rgba(91,184,212,.25);color:var(--sky)}
+    .chip-tipo{background:rgba(244,112,42,.25);color:var(--orange-l)}
+    .chip-lesion{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+    .rc-dates{font-size:.78rem;color:rgba(255,255,255,.5);text-align:right}
+    .rc-dates b{color:rgba(255,255,255,.8)}
+
+    /* TABLA EJERCICIOS */
+    .rc-body{padding:24px 28px;overflow-x:auto}
+    .ej-table{width:100%;border-collapse:collapse;font-size:.88rem}
+    .ej-table th{
+      text-align:left;font-size:.7rem;font-weight:700;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--orange);padding:0 12px 12px;
+      border-bottom:2px solid var(--orange-bg);
+    }
+    .ej-table td{padding:12px;border-bottom:1px solid #f1f5f9;color:var(--dark);vertical-align:top}
+    .ej-table tr:last-child td{border-bottom:none}
+    .ej-table tr:hover td{background:#f8faff}
+    .ej-num{
+      width:28px;height:28px;border-radius:50%;
+      background:var(--blue-bg);color:var(--blue);
+      font-size:.75rem;font-weight:700;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .ej-name{font-weight:600;color:var(--blue)}
+    .ej-obs{font-size:.8rem;color:var(--gray);margin-top:4px;font-style:italic}
+    .badge-num{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-width:32px;padding:4px 10px;border-radius:50px;
+      font-size:.8rem;font-weight:700;
+    }
+    .bn-series{background:var(--blue-bg);color:var(--blue)}
+    .bn-reps{background:var(--orange-bg);color:var(--orange)}
+    .bn-desc{background:var(--sky-bg);color:#2a7a93}
+    .no-ej{padding:20px;text-align:center;color:var(--gray);font-size:.88rem;font-style:italic}
+
+    /* LOADING */
+    #loadingOverlay{
+      position:fixed;inset:0;z-index:9999;
+      background:rgba(15,20,40,.85);backdrop-filter:blur(8px);
+      display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+    }
+    #loadingOverlay.show{display:flex}
+    .spinner{width:44px;height:44px;border:3px solid rgba(91,184,212,.2);border-top-color:var(--sky);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-txt{color:rgba(255,255,255,.7);font-size:.9rem;font-weight:500}
+
+    /* TOAST */
+    #toast{position:fixed;bottom:28px;right:28px;z-index:9999;background:var(--blue);color:white;padding:14px 20px;border-radius:12px;font-size:.88rem;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.25);transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:10px;pointer-events:none;max-width:320px}
+    #toast.show{transform:translateY(0);opacity:1}
+    #toast.ok{background:#16a34a}
+    #toast.err{background:#dc2626}
+
+    @media(max-width:700px){
+      .login-card{padding:36px 24px}
+      .pt-logout{float:none;display:block;margin:12px 0 0;width:fit-content}
+      .pt-header{padding-bottom:20px}
+      .rc-header{flex-direction:column;align-items:flex-start}
+      .rc-dates{text-align:left}
+      .ej-table th:nth-child(5),.ej-table td:nth-child(5){display:none}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <div>
+      <div class="nav-brand">Centro <span>Kairós</span></div>
+      <div class="nav-tag">Portal Pacientes</div>
+    </div>
+  </a>
+  <a href="index.html" class="nav-back">← Volver al sitio</a>
+</nav>
+
+<!-- LOADING -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-txt">Cargando tus rutinas…</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><span id="toastIcon">✅</span><span id="toastMsg"></span></div>
+
+<!-- ════════════════════════════
+     PANTALLA LOGIN
+════════════════════════════ -->
+<div id="loginScreen">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="login-card">
+    <div class="lc-badge"><span class="lc-badge-dot"></span> Portal Pacientes</div>
+    <h1 class="lc-title">Tu <em>rutina</em> personalizada</h1>
+    <p class="lc-sub">Ingresá tu DNI para ver los ejercicios y rutinas que preparó tu kinesiólogo.</p>
+
+    <div class="lc-grp">
+      <label>DNI / RUT</label>
+      <input type="text" id="dniInput" placeholder="Ej: 12648142" inputmode="numeric"
+             onkeydown="if(event.key==='Enter') doLogin()"/>
+    </div>
+    <div class="lc-err" id="loginErr">❌ No encontramos ese DNI. Verificá el número o consultá con tu kinesiólogo.</div>
+    <button class="lc-btn" id="loginBtn" onclick="doLogin()">
+      <span id="loginBtnTxt">Ver mis rutinas</span>
+      <span id="loginBtnIcon">→</span>
+    </button>
+    <p class="lc-note">Solo vos podés ver tus rutinas. Tus datos son privados y seguros.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     PANTALLA PORTAL
+════════════════════════════ -->
+<div id="portalScreen">
+  <div class="pt-header">
+    <button class="pt-logout" onclick="doLogout()">🔒 Cerrar sesión</button>
+    <div class="pt-greeting">Bienvenido/a</div>
+    <div class="pt-name" id="ptName">–</div>
+    <div class="pt-dni" id="ptDni">–</div>
+  </div>
+
+  <div class="pt-content">
+    <div id="rutinasList"></div>
+  </div>
+</div>
+
+<script>
+  // ══════════════════════════════
+  // CONFIG — ID de la Google Sheet
+  // ══════════════════════════════
+  // URL base de publicación (Archivo > Compartir > Publicar en la web)
+  const PUB_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTY2hcnhDrl-opwTAp34zEHocFuM7n9QS4WctobQ0ocw51HH_bk0gX3j-sXPOAtxUIH2J0J1cNAs5fF';
+
+  // GIDs numéricos de cada hoja
+  const GID_RUTINAS    = '1515364195';
+  const GID_EJERCICIOS = '1914666354';
+
+  // ══════════════════════════════
+  // ESTADO
+  // ══════════════════════════════
+  let allRutinas    = [];
+  let allEjercicios = [];
+  let currentDni    = null;
+
+  // ══════════════════════════════
+  // UTILIDADES
+  // ══════════════════════════════
+  function showToast(msg, type='ok') {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    document.getElementById('toastIcon').textContent = type === 'ok' ? '✅' : '❌';
+    t.className = 'show ' + type;
+    setTimeout(() => { t.className = ''; }, 4500);
+  }
+
+  function showLoading(v) {
+    document.getElementById('loadingOverlay').classList.toggle('show', v);
+  }
+
+  // Leer hoja publicada como CSV (funciona desde cualquier dominio, sin CORS)
+  async function fetchSheet(gid) {
+    const url = `${PUB_BASE}/pub?gid=${gid}&single=true&output=csv`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Error ' + res.status);
+    const text = await res.text();
+    return parseCSV(text);
+  }
+
+  function parseCSV(text) {
+    const lines = text.trim().split(/\r?\n/);
+    const headers = parseLine(lines[0]);
+    return lines.slice(1).filter(l => l.trim()).map(line => {
+      const vals = parseLine(line);
+      const obj = {};
+      headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
+      return obj;
+    });
+  }
+
+  function parseLine(line) {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"' && !inQ) { inQ = true; }
+      else if (c === '"' && inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else if (c === '"' && inQ) { inQ = false; }
+      else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+      else { cur += c; }
+    }
+    result.push(cur);
+    return result;
+  }
+
+  // ══════════════════════════════
+  // LOGIN
+  // ══════════════════════════════
+  async function doLogin() {
+    const dni = document.getElementById('dniInput').value.trim().replace(/\D/g, '');
+    if (!dni) { showToast('Ingresá tu DNI', 'err'); return; }
+
+    document.getElementById('loginErr').style.display = 'none';
+    document.getElementById('loginBtn').disabled = true;
+    document.getElementById('loginBtnTxt').textContent = 'Buscando…';
+    document.getElementById('loginBtnIcon').textContent = '⏳';
+    showLoading(true);
+
+    try {
+      // Cargar ambas hojas en paralelo
+      [allRutinas, allEjercicios] = await Promise.all([
+        fetchSheet(GID_RUTINAS),
+        fetchSheet(GID_EJERCICIOS)
+      ]);
+
+      // Buscar rutinas del paciente — columna "ID Paciente"
+      // Normalizar: comparar sin puntos ni guiones
+      const normalize = s => String(s || '').replace(/\D/g, '');
+      const misRutinas = allRutinas.filter(r => normalize(r['ID Paciente']) === dni);
+
+      if (misRutinas.length === 0) {
+        document.getElementById('loginErr').style.display = 'block';
+        return;
+      }
+
+      currentDni = dni;
+
+      // Intentar obtener nombre del paciente
+      const conNombre = misRutinas.find(r => r['Nombre Paciente'] && r['Nombre Paciente'].trim());
+      const nombre = conNombre ? conNombre['Nombre Paciente'].trim() : 'Paciente';
+
+      showPortal(nombre, dni, misRutinas);
+      showToast('¡Bienvenido/a! Aquí están tus rutinas 💪', 'ok');
+
+    } catch(e) {
+      console.error(e);
+      showToast('Error al cargar los datos. Intentá de nuevo.', 'err');
+    } finally {
+      showLoading(false);
+      document.getElementById('loginBtn').disabled = false;
+      document.getElementById('loginBtnTxt').textContent = 'Ver mis rutinas';
+      document.getElementById('loginBtnIcon').textContent = '→';
+    }
+  }
+
+  // ══════════════════════════════
+  // MOSTRAR PORTAL
+  // ══════════════════════════════
+  function showPortal(nombre, dni, rutinas) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('portalScreen').style.display = 'block';
+    document.getElementById('ptName').textContent = nombre;
+    document.getElementById('ptDni').textContent = 'DNI: ' + dni;
+
+    const list = document.getElementById('rutinasList');
+
+    if (rutinas.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🏃</div>
+          <div class="empty-title">No tenés rutinas asignadas aún</div>
+          <div class="empty-sub">Consultá con tu kinesiólogo para que te asigne tu plan de ejercicios.</div>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = `
+      <div class="rutinas-title">Tus rutinas</div>
+      <div class="rutinas-sub">Encontramos ${rutinas.length} rutina${rutinas.length>1?'s':''} asignada${rutinas.length>1?'s':''} a tu DNI.</div>
+    `;
+
+    rutinas.forEach(r => {
+      const idRutina = r['ID Rutina'] || r['ID Rutina '] || '';
+      // Buscar ejercicios de esta rutina
+      const ejercicios = allEjercicios.filter(e =>
+        (e['ID Rutina'] || '').trim() === idRutina.trim()
+      );
+      list.appendChild(buildRutinaCard(r, ejercicios));
+    });
+  }
+
+  function buildRutinaCard(r, ejercicios) {
+    const card = document.createElement('div');
+    card.className = 'rutina-card';
+
+    const fechaInicio = r['Fecha Inicio'] || r['Fecha inicio'] || '';
+    const fechaFin    = r['Fecha Fin']    || r['Fecha fin']    || '';
+    const fase        = r['Fase']         || '';
+    const tipo        = r['Tipo']         || '';
+    const lesion      = r['Lesión / Objetivo'] || r['Lesion / Objetivo'] || '';
+    const nombre      = r['Nombre de la Rutina'] || r['Nombre de la rutina'] || 'Rutina';
+
+    const chips = [
+      fase   ? `<span class="rc-chip chip-fase">Fase ${fase}</span>` : '',
+      tipo   ? `<span class="rc-chip chip-tipo">${tipo}</span>`      : '',
+      lesion ? `<span class="rc-chip chip-lesion">${lesion}</span>`  : '',
+    ].filter(Boolean).join('');
+
+    const fechas = (fechaInicio || fechaFin) ? `
+      <div class="rc-dates">
+        ${fechaInicio ? `<div>Inicio: <b>${fechaInicio}</b></div>` : ''}
+        ${fechaFin    ? `<div>Fin: <b>${fechaFin}</b></div>`       : ''}
+      </div>` : '';
+
+    let ejHtml = '';
+    if (ejercicios.length === 0) {
+      ejHtml = `<div class="no-ej">No hay ejercicios cargados para esta rutina aún.</div>`;
+    } else {
+      const filas = ejercicios.map((e, i) => {
+        const nombre  = e['Ejercicio']        || '–';
+        const series  = e['Series']           || '–';
+        const reps    = e['Repeticiones']     || '–';
+        const peso    = e['Peso (kg)']        || e['Peso (Kg)'] || '';
+        const desc    = e['Descanso (seg)']   || e['Descanso'] || '';
+        const obs     = e['Observaciones']    || '';
+
+        return `
+          <tr>
+            <td><span class="ej-num">${i+1}</span></td>
+            <td>
+              <div class="ej-name">${nombre}</div>
+              ${obs ? `<div class="ej-obs">${obs}</div>` : ''}
+            </td>
+            <td><span class="badge-num bn-series">${series}</span></td>
+            <td><span class="badge-num bn-reps">${reps}</span></td>
+            <td>${peso ? peso+' kg' : '–'}</td>
+            <td>${desc ? `<span class="badge-num bn-desc">${desc}s</span>` : '–'}</td>
+          </tr>`;
+      }).join('');
+
+      ejHtml = `
+        <table class="ej-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ejercicio</th>
+              <th>Series</th>
+              <th>Reps</th>
+              <th>Peso</th>
+              <th>Descanso</th>
+            </tr>
+          </thead>
+          <tbody>${filas}</tbody>
+        </table>`;
+    }
+
+    card.innerHTML = `
+      <div class="rc-header">
+        <div>
+          <div class="rc-title">${nombre}</div>
+          ${chips ? `<div class="rc-meta">${chips}</div>` : ''}
+        </div>
+        ${fechas}
+      </div>
+      <div class="rc-body">${ejHtml}</div>
+    `;
+    return card;
+  }
+
+  // ══════════════════════════════
+  // LOGOUT
+  // ══════════════════════════════
+  function doLogout() {
+    currentDni = null;
+    allRutinas = [];
+    allEjercicios = [];
+    document.getElementById('dniInput').value = '';
+    document.getElementById('loginErr').style.display = 'none';
+    document.getElementById('portalScreen').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    showToast('Sesión cerrada 🔒', 'ok');
+  }
+
+  // Foco automático al cargar
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => document.getElementById('dniInput').focus(), 300);
+  });
+</script>
+</body>
+</html>
