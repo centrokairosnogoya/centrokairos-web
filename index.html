@@ -96,10 +96,10 @@
 
     /* CONTACTO */
     #contacto{background:linear-gradient(140deg,var(--blue-d),var(--blue))}
-    .ct-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;margin-top:52px}
+    .ct-grid{display:grid;grid-template-columns:1fr;gap:64px;align-items:start;margin-top:52px}
     .ct-stitle{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;color:white;margin-bottom:14px}
     .ct-lead{font-size:.97rem;color:rgba(255,255,255,.65);line-height:1.75}
-    .ct-items{display:flex;flex-direction:column;gap:22px;margin-top:36px}
+    .ct-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px 48px;margin-top:36px;max-width:900px}
     .ct-item{display:flex;align-items:flex-start;gap:16px}
     .ct-ico{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.1);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
     .ct-lbl{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sky);margin-bottom:4px}
@@ -226,10 +226,8 @@
     <li><a href="#servicios">Servicios</a></li>
     <li><a href="#galeria">Galería</a></li>
     <li><a href="#contacto">Contacto</a></li>
-    <li><a href="#registro">Pacientes</a></li>
   </ul>
   <a href="/portal.html" class="nav-portal">Acceso Paciente</a>
-  <a href="#registro" class="nav-cta">Registrarme →</a>
 </nav>
 
 <!-- HERO -->
@@ -251,7 +249,6 @@
     </div>
     <div class="hero-btns">
       <a href="#servicios" class="btn-p">Ver servicios</a>
-      <a href="#registro" class="btn-o">Registrarme como paciente</a>
       <a href="/portal.html" class="btn-o" style="border-color:rgba(91,184,212,.6);color:var(--sky)">🔐 Acceso Paciente</a>
     </div>
   </div>
@@ -532,108 +529,9 @@
         <div class="ct-item"><div class="ct-ico">🕐</div><div><div class="ct-lbl">Horarios</div><div class="ct-val" data-editable contenteditable="false" data-key="horario">Lunes a Viernes 8:00–20:00 · Sábados 9:00–14:00</div></div></div>
       </div>
     </div>
-    <div class="ct-form">
-      <h3>Envianos un mensaje</h3>
-      <div class="cf-grp"><label>Tu nombre</label><input type="text" id="cn" placeholder="Nombre completo"/></div>
-      <div class="cf-grp"><label>Email o teléfono</label><input type="text" id="cc" placeholder="correo@ejemplo.com"/></div>
-      <div class="cf-grp"><label>Consulta</label><textarea id="cm" placeholder="¿En qué podemos ayudarte?"></textarea></div>
-      <button onclick="sendContact()" style="background:var(--orange);color:white;border:none;padding:13px 28px;border-radius:50px;cursor:pointer;font-weight:600;font-family:'DM Sans',sans-serif;font-size:.9rem">Enviar mensaje ✉️</button>
-    </div>
   </div>
 </section>
 
-<!-- REGISTRO -->
-<section id="registro">
-  <div class="stag">Pacientes nuevos</div>
-  <h2 class="stitle">Formulario de registro</h2>
-  <p class="slead">Completá tus datos para comenzar tu proceso en Centro Kairós.</p>
-  <div class="reg-card">
-    <h3 class="reg-title">Registro de paciente nuevo</h3>
-    <p class="reg-sub">Completá todos los campos con <span style="color:var(--orange)">*</span>. Tus datos quedarán en nuestra base maestra de seguimiento.</p>
-    <div class="reg-note">🔒 <strong>Privacidad garantizada:</strong> Tus datos son confidenciales y se usan exclusivamente para el seguimiento de tu tratamiento.</div>
-    <div class="fsec">📋 Datos personales</div>
-    <div class="frow">
-      <div class="fgrp"><label>Nombre<span class="req">*</span></label><input type="text" id="f_nombre" placeholder="Nombre/s"/></div>
-      <div class="fgrp"><label>Apellido<span class="req">*</span></label><input type="text" id="f_apellido" placeholder="Apellido/s"/></div>
-    </div>
-    <div class="frow">
-      <div class="fgrp"><label>RUT / DNI<span class="req">*</span></label><input type="text" id="f_rut" placeholder="12.345.678-9"/></div>
-      <div class="fgrp"><label>Fecha de nacimiento<span class="req">*</span></label><input type="date" id="f_nacimiento"/></div>
-    </div>
-    <div class="frow">
-      <div class="fgrp"><label>Sexo</label><select id="f_sexo"><option value="">Seleccionar</option><option>Femenino</option><option>Masculino</option><option>Otro / Prefiero no indicar</option></select></div>
-      <div class="fgrp"><label>Nacionalidad</label><input type="text" id="f_nacionalidad" placeholder="Ej: Chilena"/></div>
-    </div>
-    <div class="fsec">📞 Datos de contacto</div>
-    <div class="frow">
-      <div class="fgrp"><label>Teléfono / WhatsApp<span class="req">*</span></label><input type="tel" id="f_telefono" placeholder="+56 9 1234 5678"/></div>
-      <div class="fgrp"><label>Email<span class="req">*</span></label><input type="email" id="f_email" placeholder="correo@ejemplo.com"/></div>
-    </div>
-    <div class="frow">
-      <div class="fgrp"><label>Dirección</label><input type="text" id="f_direccion" placeholder="Calle, número"/></div>
-      <div class="fgrp"><label>Comuna / Ciudad</label><input type="text" id="f_ciudad" placeholder="Ej: Providencia, Santiago"/></div>
-    </div>
-    <div class="fsec">🏥 Previsión y datos clínicos</div>
-    <div class="frow">
-      <div class="fgrp"><label>Obra Social / Prepaga<span class="req">*</span></label><select id="f_prevision"><option value="">Seleccionar</option>
-<optgroup label="Obras Sociales Nacionales">
-<option>PAMI</option>
-<option>IOMA</option>
-<option>OSDE</option>
-<option>Swiss Medical</option>
-<option>Galeno</option>
-<option>Medifé</option>
-<option>OMINT</option>
-<option>ACCORD Salud</option>
-<option>Jerárquicos Salud</option>
-<option>OSDEPYM</option>
-<option>OSPEDYC</option>
-<option>OSMECON</option>
-<option>OSECAC</option>
-<option>OSPECOM</option>
-<option>FATSA</option>
-<option>OSPLAD</option>
-<option>OSPOCE</option>
-<option>OSPE</option>
-<option>UPCN</option>
-<option>ATE</option>
-<option>OSMISS</option>
-<option>OSPIA</option>
-</optgroup>
-<optgroup label="Prepagas">
-<option>OSDE (Plan prepago)</option>
-<option>Swiss Medical (Prepaga)</option>
-<option>Galeno (Prepaga)</option>
-<option>Medifé (Prepaga)</option>
-<option>Sancor Salud</option>
-<option>Accord Salud</option>
-<option>Avalian</option>
-<option>Humana</option>
-<option>Federada Salud</option>
-<option>Prevención Salud</option>
-</optgroup>
-<optgroup label="Otras">
-<option>Particular (sin cobertura)</option>
-<option>OSER (IOSPER)</option>
-<option>Otra obra social</option>
-<option>Otra prepaga</option>
-</optgroup>
-</select></div>
-      <div class="fgrp"><label>Médico derivador</label><input type="text" id="f_medico" placeholder="Dr/a. nombre y especialidad"/></div>
-    </div>
-    <div class="frow">
-      <div class="fgrp"><label>Diagnóstico / Motivo<span class="req">*</span></label><input type="text" id="f_diagnostico" placeholder="Ej: Dolor lumbar, ACV…"/></div>
-      <div class="fgrp"><label>Servicio de interés<span class="req">*</span></label><select id="f_servicio"><option value="">Seleccionar</option><option>Pilates Kinésico</option><option>Kinesiología Rehabilitación Neurológica</option><option>Terapia Activa</option><option>Kinesiología General</option><option>Necesito orientación</option></select></div>
-    </div>
-    <div class="fgrp"><label>Antecedentes médicos relevantes</label><textarea id="f_antecedentes" placeholder="Cirugías, medicamentos, condiciones crónicas…"></textarea></div>
-
-
-    <div class="form-footer">
-      <button class="btn-sub" id="submitBtn" onclick="submitForm()"><span id="btnTxt">Registrarme como paciente</span><span id="btnIcon">→</span></button>
-      <p class="form-legal">Al enviar aceptás que tus datos sean almacenados en nuestra base de seguimiento clínico.</p>
-    </div>
-  </div>
-</section>
 
 <!-- FOOTER -->
 <footer>
@@ -680,7 +578,6 @@
   // CONFIGURACIÓN — CAMBIÁ ESTO
   // ══════════════════════════════
   const ADMIN_PASSWORD = 'Kairos2020'; // 🔑 Cambiá esta contraseña
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxGI7eIaHvUDsur1mNaLnpfamNuBWiJ7v5-7tleVYnjQQnkAofwljsnGhZ6Mx9VN2cW/exec'; // puente de la app nueva (Versión 9)
 
   // ══════════════════════════════
   // ESTADO
@@ -821,66 +718,6 @@
       const saved = localStorage.getItem('kairos_txt_'+el.dataset.key);
       if (saved) el.innerHTML = saved;
     });
-  }
-
-  // ══════════════════════════════
-  // FORMULARIO PACIENTE → GOOGLE SHEETS
-  // ══════════════════════════════
-  async function submitForm() {
-    const get = id => document.getElementById(id)?.value?.trim()||'';
-    const req = {
-      'Nombre':get('f_nombre'),'Apellido':get('f_apellido'),
-      'RUT':get('f_rut'),'Fecha nacimiento':get('f_nacimiento'),
-      'Teléfono':get('f_telefono'),'Email':get('f_email'),
-      'Previsión':get('f_prevision'),'Diagnóstico':get('f_diagnostico'),
-      'Servicio':get('f_servicio')
-    };
-    const miss = Object.entries(req).filter(([,v])=>!v).map(([k])=>k);
-    if (miss.length){ showToast('Completá: '+miss.join(', '),'err'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req['Email'])){ showToast('Email inválido','err'); return; }
-
-    const payload = {
-      action:'addRegistroWeb',
-      timestamp:new Date().toLocaleString('es-CL'),
-      nombre:get('f_nombre'), apellido:get('f_apellido'), rut:get('f_rut'),
-      fecha_nacimiento:get('f_nacimiento'), sexo:get('f_sexo'), nacionalidad:get('f_nacionalidad'),
-      telefono:get('f_telefono'), email:get('f_email'), direccion:get('f_direccion'),
-      ciudad:get('f_ciudad'), prevision:get('f_prevision'), medico_derivador:get('f_medico'),
-      diagnostico:get('f_diagnostico'), servicio:get('f_servicio'), antecedentes:get('f_antecedentes'),
-      emergencia_nombre:get('f_e_nombre'), emergencia_tel:get('f_e_tel'), emergencia_relacion:get('f_e_relacion'),
-      dias:get('f_dias'), horario:get('f_horario'), comentarios:get('f_comentarios'),
-      origen:'Web Centro Kairós', estado:'Nuevo'
-    };
-
-    const btn = document.getElementById('submitBtn');
-    document.getElementById('btnTxt').textContent='Enviando…';
-    document.getElementById('btnIcon').textContent='⏳';
-    btn.disabled=true;
-
-    try {
-      await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      showToast('¡Registro exitoso! Nos contactaremos pronto 🎉','ok');
-      document.querySelectorAll('#registro input,#registro select,#registro textarea').forEach(el=>el.value='');
-    } catch(e){
-      showToast('Error al enviar. Intentá más tarde.','err');
-    } finally {
-      document.getElementById('btnTxt').textContent='Registrarme como paciente';
-      document.getElementById('btnIcon').textContent='→';
-      btn.disabled=false;
-    }
-  }
-
-  // ══════════════════════════════
-  // CONTACTO RÁPIDO
-  // ══════════════════════════════
-  function sendContact() {
-    const n=document.getElementById('cn')?.value?.trim();
-    const c=document.getElementById('cc')?.value?.trim();
-    if (!n||!c){ showToast('Completá nombre y contacto','err'); return; }
-    showToast('Mensaje enviado. ¡Te contactamos pronto!','ok');
-    document.getElementById('cn').value='';
-    document.getElementById('cc').value='';
-    document.getElementById('cm').value='';
   }
 
   // ══════════════════════════════
