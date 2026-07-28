@@ -215,8 +215,14 @@
     <p class="lc-sub">Ingresá tu DNI para ver los ejercicios y rutinas que preparó tu kinesiólogo.</p>
 
     <div class="lc-grp">
-      <label>DNI / RUT</label>
+      <label>DNI</label>
       <input type="text" id="dniInput" placeholder="Ej: 12648142" inputmode="numeric"
+             maxlength="12" autocomplete="off"
+             onkeydown="if(event.key==='Enter') doLogin()"/>
+    </div>
+    <div class="lc-grp" id="fnacGrp" style="display:none">
+      <label>Fecha de nacimiento</label>
+      <input type="date" id="fnacInput"
              onkeydown="if(event.key==='Enter') doLogin()"/>
     </div>
     <div class="lc-err" id="loginErr">❌ No encontramos ese DNI. Verificá el número o consultá con tu kinesiólogo.</div>
@@ -224,7 +230,7 @@
       <span id="loginBtnTxt">Ver mis rutinas</span>
       <span id="loginBtnIcon">→</span>
     </button>
-    <p class="lc-note">Solo vos podés ver tus rutinas. Tus datos son privados y seguros.</p>
+    <p class="lc-note">Solo se muestran las rutinas asociadas al DNI ingresado.</p>
   </div>
 </div>
 
@@ -246,233 +252,200 @@
 
 <script>
   // ══════════════════════════════
-  // CONFIG — ID de la Google Sheet
+  // CONFIG
   // ══════════════════════════════
-  // URL base de publicación (Archivo > Compartir > Publicar en la web)
-  const PUB_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTY2hcnhDrl-opwTAp34zEHocFuM7n9QS4WctobQ0ocw51HH_bk0gX3j-sXPOAtxUIH2J0J1cNAs5fF';
+  // URL del puente de la app Kairós (el mismo Apps Script que usa la app de gestión).
+  // Si algún día lo re-desplegás con otra URL, actualizala acá.
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxGI7eIaHvUDsur1mNaLnpfamNuBWiJ7v5-7tleVYnjQQnkAofwljsnGhZ6Mx9VN2cW/exec';
 
-  // GIDs numéricos de cada hoja
-  const GID_RUTINAS    = '1515364195';
-  const GID_EJERCICIOS = '1914666354';
+  // Poné true SOLO si también lo activaste en el Apps Script.
+  const PEDIR_FECHA_NAC = false;
 
-  // ══════════════════════════════
-  // ESTADO
-  // ══════════════════════════════
-  let allRutinas    = [];
-  let allEjercicios = [];
-  let currentDni    = null;
+  const MENSAJES = {
+    DNI_INVALIDO:   'Ingresá un DNI válido (solo números).',
+    NO_ENCONTRADO:  'No encontramos esos datos. Verificalos o consultá con tu kinesiólogo.',
+    INACTIVO:       'Tu plan no está activo en este momento. Acercate al centro o escribinos por WhatsApp para reactivarlo.',
+    ERROR_SERVIDOR: 'No pudimos conectarnos. Probá de nuevo en unos minutos.',
+    SIN_CONFIGURAR: 'El portal todavía no está configurado. Avisale al centro.'
+  };
 
   // ══════════════════════════════
   // UTILIDADES
   // ══════════════════════════════
-  function showToast(msg, type='ok') {
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function showToast(msg, type) {
+    type = type || 'ok';
     const t = document.getElementById('toast');
     document.getElementById('toastMsg').textContent = msg;
     document.getElementById('toastIcon').textContent = type === 'ok' ? '✅' : '❌';
     t.className = 'show ' + type;
-    setTimeout(() => { t.className = ''; }, 4500);
+    setTimeout(function () { t.className = ''; }, 4500);
   }
 
   function showLoading(v) {
     document.getElementById('loadingOverlay').classList.toggle('show', v);
   }
 
-  // Leer hoja publicada como CSV (funciona desde cualquier dominio, sin CORS)
-  async function fetchSheet(gid) {
-    const url = `${PUB_BASE}/pub?gid=${gid}&single=true&output=csv`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Error ' + res.status);
-    const text = await res.text();
-    return parseCSV(text);
+  function showError(msg) {
+    const box = document.getElementById('loginErr');
+    box.textContent = '❌ ' + msg;
+    box.style.display = 'block';
   }
 
-  function parseCSV(text) {
-    const lines = text.trim().split(/\r?\n/);
-    const headers = parseLine(lines[0]);
-    return lines.slice(1).filter(l => l.trim()).map(line => {
-      const vals = parseLine(line);
-      const obj = {};
-      headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
-      return obj;
-    });
-  }
-
-  function parseLine(line) {
-    const result = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"' && !inQ) { inQ = true; }
-      else if (c === '"' && inQ && line[i+1] === '"') { cur += '"'; i++; }
-      else if (c === '"' && inQ) { inQ = false; }
-      else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
-      else { cur += c; }
-    }
-    result.push(cur);
-    return result;
+  function setCargando(v) {
+    document.getElementById('loginBtn').disabled = v;
+    document.getElementById('loginBtnTxt').textContent = v ? 'Buscando…' : 'Ver mis rutinas';
+    document.getElementById('loginBtnIcon').textContent = v ? '⏳' : '→';
+    showLoading(v);
   }
 
   // ══════════════════════════════
   // LOGIN
   // ══════════════════════════════
   async function doLogin() {
-    const dni = document.getElementById('dniInput').value.trim().replace(/\D/g, '');
-    if (!dni) { showToast('Ingresá tu DNI', 'err'); return; }
-
+    const dni = document.getElementById('dniInput').value.replace(/\D/g, '');
     document.getElementById('loginErr').style.display = 'none';
-    document.getElementById('loginBtn').disabled = true;
-    document.getElementById('loginBtnTxt').textContent = 'Buscando…';
-    document.getElementById('loginBtnIcon').textContent = '⏳';
-    showLoading(true);
+
+    if (dni.length < 6) { showError(MENSAJES.DNI_INVALIDO); return; }
+
+    if (API_URL.indexOf('http') !== 0) {
+      showError(MENSAJES.SIN_CONFIGURAR);
+      return;
+    }
+
+    let url = API_URL + '?action=portalRutinas&dni=' + encodeURIComponent(dni);
+
+    if (PEDIR_FECHA_NAC) {
+      const fnac = document.getElementById('fnacInput').value;
+      if (!fnac) { showError('Ingresá tu fecha de nacimiento.'); return; }
+      url += '&fnac=' + encodeURIComponent(fnac);
+    }
+
+    setCargando(true);
 
     try {
-      // Cargar ambas hojas en paralelo
-      [allRutinas, allEjercicios] = await Promise.all([
-        fetchSheet(GID_RUTINAS),
-        fetchSheet(GID_EJERCICIOS)
-      ]);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
 
-      // Buscar rutinas del paciente — columna "ID Paciente"
-      // Normalizar: comparar sin puntos ni guiones
-      const normalize = s => String(s || '').replace(/\D/g, '');
-      const misRutinas = allRutinas.filter(r => normalize(r['ID Paciente']) === dni);
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error('Respuesta inesperada del servidor');
+      }
 
-      if (misRutinas.length === 0) {
-        document.getElementById('loginErr').style.display = 'block';
+      if (!data.ok) {
+        showError(MENSAJES[data.error] || MENSAJES.ERROR_SERVIDOR);
         return;
       }
 
-      currentDni = dni;
+      showPortal(data.paciente, data.rutinas || []);
+      showToast('¡Bienvenido/a! Acá están tus rutinas 💪', 'ok');
 
-      // Intentar obtener nombre del paciente
-      const conNombre = misRutinas.find(r => r['Nombre Paciente'] && r['Nombre Paciente'].trim());
-      const nombre = conNombre ? conNombre['Nombre Paciente'].trim() : 'Paciente';
-
-      showPortal(nombre, dni, misRutinas);
-      showToast('¡Bienvenido/a! Aquí están tus rutinas 💪', 'ok');
-
-    } catch(e) {
-      console.error(e);
-      showToast('Error al cargar los datos. Intentá de nuevo.', 'err');
+    } catch (err) {
+      console.error(err);
+      showError(MENSAJES.ERROR_SERVIDOR);
     } finally {
-      showLoading(false);
-      document.getElementById('loginBtn').disabled = false;
-      document.getElementById('loginBtnTxt').textContent = 'Ver mis rutinas';
-      document.getElementById('loginBtnIcon').textContent = '→';
+      setCargando(false);
     }
   }
 
   // ══════════════════════════════
   // MOSTRAR PORTAL
   // ══════════════════════════════
-  function showPortal(nombre, dni, rutinas) {
+  function showPortal(paciente, rutinas) {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('portalScreen').style.display = 'block';
-    document.getElementById('ptName').textContent = nombre;
-    document.getElementById('ptDni').textContent = 'DNI: ' + dni;
+    document.getElementById('ptName').textContent = paciente.nombre;
+    document.getElementById('ptDni').textContent = 'DNI: ' + paciente.dni;
+    window.scrollTo(0, 0);
 
     const list = document.getElementById('rutinasList');
+    list.innerHTML = '';
 
     if (rutinas.length === 0) {
-      list.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">🏃</div>
-          <div class="empty-title">No tenés rutinas asignadas aún</div>
-          <div class="empty-sub">Consultá con tu kinesiólogo para que te asigne tu plan de ejercicios.</div>
-        </div>`;
+      list.innerHTML =
+        '<div class="empty-state">' +
+          '<div class="empty-icon">🏃</div>' +
+          '<div class="empty-title">Todavía no tenés rutinas asignadas</div>' +
+          '<div class="empty-sub">Consultá con tu kinesiólogo para que te arme tu plan de ejercicios.</div>' +
+        '</div>';
       return;
     }
 
-    list.innerHTML = `
-      <div class="rutinas-title">Tus rutinas</div>
-      <div class="rutinas-sub">Encontramos ${rutinas.length} rutina${rutinas.length>1?'s':''} asignada${rutinas.length>1?'s':''} a tu DNI.</div>
-    `;
+    const plural = rutinas.length > 1;
+    list.innerHTML =
+      '<div class="rutinas-title">Tus rutinas</div>' +
+      '<div class="rutinas-sub">Tenés ' + rutinas.length + ' rutina' + (plural ? 's' : '') +
+      ' asignada' + (plural ? 's' : '') + '.</div>';
 
-    rutinas.forEach(r => {
-      const idRutina = r['ID Rutina'] || r['ID Rutina '] || '';
-      // Buscar ejercicios de esta rutina
-      const ejercicios = allEjercicios.filter(e =>
-        (e['ID Rutina'] || '').trim() === idRutina.trim()
-      );
-      list.appendChild(buildRutinaCard(r, ejercicios));
+    rutinas.forEach(function (r) {
+      list.appendChild(buildRutinaCard(r));
     });
   }
 
-  function buildRutinaCard(r, ejercicios) {
+  function buildRutinaCard(r) {
     const card = document.createElement('div');
     card.className = 'rutina-card';
 
-    const fechaInicio = r['Fecha Inicio'] || r['Fecha inicio'] || '';
-    const fechaFin    = r['Fecha Fin']    || r['Fecha fin']    || '';
-    const fase        = r['Fase']         || '';
-    const tipo        = r['Tipo']         || '';
-    const lesion      = r['Lesión / Objetivo'] || r['Lesion / Objetivo'] || '';
-    const nombre      = r['Nombre de la Rutina'] || r['Nombre de la rutina'] || 'Rutina';
-
     const chips = [
-      fase   ? `<span class="rc-chip chip-fase">Fase ${fase}</span>` : '',
-      tipo   ? `<span class="rc-chip chip-tipo">${tipo}</span>`      : '',
-      lesion ? `<span class="rc-chip chip-lesion">${lesion}</span>`  : '',
+      r.fase     ? '<span class="rc-chip chip-fase">Fase ' + esc(r.fase) + '</span>'    : '',
+      r.objetivo ? '<span class="rc-chip chip-tipo">' + esc(r.objetivo) + '</span>'     : '',
+      r.obs      ? '<span class="rc-chip chip-lesion">' + esc(r.obs) + '</span>'        : ''
     ].filter(Boolean).join('');
 
-    const fechas = (fechaInicio || fechaFin) ? `
-      <div class="rc-dates">
-        ${fechaInicio ? `<div>Inicio: <b>${fechaInicio}</b></div>` : ''}
-        ${fechaFin    ? `<div>Fin: <b>${fechaFin}</b></div>`       : ''}
-      </div>` : '';
+    const fechas = (r.fechaInicio || r.fechaFin)
+      ? '<div class="rc-dates">' +
+          (r.fechaInicio ? '<div>Inicio: <b>' + esc(r.fechaInicio) + '</b></div>' : '') +
+          (r.fechaFin    ? '<div>Fin: <b>'    + esc(r.fechaFin)    + '</b></div>' : '') +
+        '</div>'
+      : '';
 
-    let ejHtml = '';
+    const ejercicios = r.ejercicios || [];
+    let ejHtml;
+
     if (ejercicios.length === 0) {
-      ejHtml = `<div class="no-ej">No hay ejercicios cargados para esta rutina aún.</div>`;
+      ejHtml = '<div class="no-ej">Todavía no hay ejercicios cargados en esta rutina.</div>';
     } else {
-      const filas = ejercicios.map((e, i) => {
-        const nombre  = e['Ejercicio']        || '–';
-        const series  = e['Series']           || '–';
-        const reps    = e['Repeticiones']     || '–';
-        const peso    = e['Peso (kg)']        || e['Peso (Kg)'] || '';
-        const desc    = e['Descanso (seg)']   || e['Descanso'] || '';
-        const obs     = e['Observaciones']    || '';
-
-        return `
-          <tr>
-            <td><span class="ej-num">${i+1}</span></td>
-            <td>
-              <div class="ej-name">${nombre}</div>
-              ${obs ? `<div class="ej-obs">${obs}</div>` : ''}
-            </td>
-            <td><span class="badge-num bn-series">${series}</span></td>
-            <td><span class="badge-num bn-reps">${reps}</span></td>
-            <td>${peso ? peso+' kg' : '–'}</td>
-            <td>${desc ? `<span class="badge-num bn-desc">${desc}s</span>` : '–'}</td>
-          </tr>`;
+      const filas = ejercicios.map(function (e, i) {
+        return '<tr>' +
+          '<td><span class="ej-num">' + (i + 1) + '</span></td>' +
+          '<td>' +
+            '<div class="ej-name">' + esc(e.nombre || '–') + '</div>' +
+            (e.obs ? '<div class="ej-obs">' + esc(e.obs) + '</div>' : '') +
+          '</td>' +
+          '<td><span class="badge-num bn-series">' + esc(e.series || '–') + '</span></td>' +
+          '<td><span class="badge-num bn-reps">'   + esc(e.reps   || '–') + '</span></td>' +
+          '<td>' + (e.peso ? esc(e.peso) : '–') + '</td>' +
+          '<td>' + (e.descanso ? '<span class="badge-num bn-desc">' + esc(e.descanso) + '</span>' : '–') + '</td>' +
+        '</tr>';
       }).join('');
 
-      ejHtml = `
-        <table class="ej-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Ejercicio</th>
-              <th>Series</th>
-              <th>Reps</th>
-              <th>Peso</th>
-              <th>Descanso</th>
-            </tr>
-          </thead>
-          <tbody>${filas}</tbody>
-        </table>`;
+      ejHtml =
+        '<table class="ej-table">' +
+          '<thead><tr>' +
+            '<th>#</th><th>Ejercicio</th><th>Series</th>' +
+            '<th>Reps</th><th>Peso</th><th>Descanso</th>' +
+          '</tr></thead>' +
+          '<tbody>' + filas + '</tbody>' +
+        '</table>';
     }
 
-    card.innerHTML = `
-      <div class="rc-header">
-        <div>
-          <div class="rc-title">${nombre}</div>
-          ${chips ? `<div class="rc-meta">${chips}</div>` : ''}
-        </div>
-        ${fechas}
-      </div>
-      <div class="rc-body">${ejHtml}</div>
-    `;
+    card.innerHTML =
+      '<div class="rc-header">' +
+        '<div>' +
+          '<div class="rc-title">' + esc(r.nombre || 'Rutina') + '</div>' +
+          (chips ? '<div class="rc-meta">' + chips + '</div>' : '') +
+        '</div>' +
+        fechas +
+      '</div>' +
+      '<div class="rc-body">' + ejHtml + '</div>';
+
     return card;
   }
 
@@ -480,19 +453,24 @@
   // LOGOUT
   // ══════════════════════════════
   function doLogout() {
-    currentDni = null;
-    allRutinas = [];
-    allEjercicios = [];
     document.getElementById('dniInput').value = '';
+    const fnac = document.getElementById('fnacInput');
+    if (fnac) fnac.value = '';
+    document.getElementById('rutinasList').innerHTML = '';
     document.getElementById('loginErr').style.display = 'none';
     document.getElementById('portalScreen').style.display = 'none';
     document.getElementById('loginScreen').style.display = 'flex';
     showToast('Sesión cerrada 🔒', 'ok');
   }
 
-  // Foco automático al cargar
-  window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => document.getElementById('dniInput').focus(), 300);
+  // ══════════════════════════════
+  // INICIO
+  // ══════════════════════════════
+  window.addEventListener('DOMContentLoaded', function () {
+    if (PEDIR_FECHA_NAC) {
+      document.getElementById('fnacGrp').style.display = 'flex';
+    }
+    setTimeout(function () { document.getElementById('dniInput').focus(); }, 300);
   });
 </script>
 </body>
