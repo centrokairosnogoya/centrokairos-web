@@ -1,477 +1,528 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Portal Pacientes – Centro Kairós</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --orange:#F4702A; --orange-l:#FCA96A; --orange-bg:rgba(244,112,42,.09);
-      --blue:#2D3A8C; --blue-d:#1a2260; --blue-bg:rgba(45,58,140,.08);
-      --sky:#5BB8D4; --sky-l:#C8EAF5; --sky-bg:rgba(91,184,212,.09);
-      --white:#fff; --off:#F7F8FC; --gray:#64748B; --dark:#0F1428;
-      --r:14px; --sh:0 8px 36px rgba(45,58,140,.12);
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="robots" content="noindex"/>
+<title>Portal del paciente – Centro Kairós</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --blue:#2D3A8C; --blue-d:#1a2260; --orange:#F4702A; --orange-d:#C2500F; --sky:#5BB8D4;
+    --bg:#F7F8FC; --surface:#FFFFFF; --ink:#0F1428; --ink-2:#465068; --line:#D9DEEC;
+    --tint:#EEF1FB; --tint-o:#FDEFE6; --ok:#17734A; --ok-bg:#E4F4EC; --warn:#8A4B00; --warn-bg:#FFF1DC;
+    --bad:#A3261F; --bad-bg:#FBE9E7; --accent:var(--blue); --on-accent:#fff;
+    --r:14px; --r-s:10px;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0D1124; --surface:#171D3A; --ink:#EEF1FA; --ink-2:#B4BCD6; --line:#313A63;
+      --tint:#222A52; --tint-o:#3A2616; --ok:#7FD9A9; --ok-bg:#143326; --warn:#FFC978; --warn-bg:#3A2A0F;
+      --bad:#FF9D94; --bad-bg:#3D1916; --accent:#A9B6FF; --on-accent:#0D1124; --orange-d:#FF9A5E;
+      color-scheme:dark;
     }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth}
-    body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--dark);min-height:100vh}
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    font-size:18px;line-height:1.5;padding-bottom:env(safe-area-inset-bottom,0px)}
+  h1,h2{font-family:'Playfair Display',Georgia,'Times New Roman',serif;line-height:1.15;margin:0;letter-spacing:-.01em}
+  h1{font-size:clamp(1.9rem,6.5vw,2.6rem);font-weight:900}
+  h2{font-size:1.4rem;font-weight:700}
+  h3{font-size:1.05rem;margin:0;font-weight:700}
+  h1:focus{outline:none}
+  p{margin:0}
+  a{color:var(--accent)}
+  .muted{color:var(--ink-2)}
+  .small{font-size:.92rem}
 
-    /* NAV */
-    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:72px;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-bottom:1.5px solid rgba(91,184,212,.18);box-shadow:0 2px 24px rgba(45,58,140,.08)}
-    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-    .nav-brand{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--blue)}
-    .nav-brand span{color:var(--orange)}
-    .nav-tag{font-size:.75rem;font-weight:600;color:var(--sky);letter-spacing:.08em;text-transform:uppercase}
-    .nav-back{font-size:.82rem;color:var(--gray);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
-    .nav-back:hover{color:var(--blue)}
+  .top{display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 20px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
+  .top .logo{width:46px;height:46px;border-radius:12px;background:#fff;display:grid;place-items:center;flex:none;overflow:hidden}
+  .top .logo img{width:42px;height:42px;object-fit:contain}
+  .top .marca{font-weight:700;line-height:1.2}
+  .top .marca span{display:block;font-weight:400;font-size:.85rem;color:var(--ink-2)}
+  .top .sp{flex:1}
+  .linkb{background:none;border:0;padding:10px 6px;font:inherit;font-weight:600;color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 
-    /* LOGIN SCREEN */
-    #loginScreen{
-      min-height:100vh;display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(140deg,var(--blue-d) 0%,var(--blue) 55%,#1e3a9e 100%);
-      padding:100px 5% 60px;position:relative;overflow:hidden;
-    }
-    .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
-    .orb1{width:500px;height:500px;background:var(--sky);right:-100px;top:-100px;opacity:.13}
-    .orb2{width:360px;height:360px;background:var(--orange);bottom:-80px;left:20%;opacity:.08}
-    .login-card{
-      position:relative;z-index:2;background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(20px);
-      border-radius:28px;padding:56px 48px;width:100%;max-width:420px;
-      box-shadow:0 32px 80px rgba(0,0,0,.3);
-      animation:fadeUp .5s cubic-bezier(.34,1.56,.64,1);
-    }
-    @keyframes fadeUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-    .lc-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(91,184,212,.15);border:1px solid rgba(91,184,212,.3);color:var(--sky);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:6px 16px;border-radius:50px;margin-bottom:28px}
-    .lc-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--sky);animation:blink 2s infinite}
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-    .lc-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:white;line-height:1.1;margin-bottom:10px}
-    .lc-title em{color:var(--orange-l);font-style:normal}
-    .lc-sub{font-size:.9rem;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:36px}
-    .lc-grp{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
-    .lc-grp label{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.04em}
-    .lc-grp input{
-      padding:14px 18px;border-radius:12px;
-      border:1.5px solid rgba(255,255,255,.15);
-      background:rgba(255,255,255,.08);color:white;
-      font-family:'DM Sans',sans-serif;font-size:.97rem;
-      outline:none;transition:border-color .2s,background .2s;
-    }
-    .lc-grp input::placeholder{color:rgba(255,255,255,.3)}
-    .lc-grp input:focus{border-color:var(--sky);background:rgba(255,255,255,.12)}
-    .lc-err{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);color:#fca5a5;font-size:.82rem;padding:10px 14px;border-radius:10px;margin-bottom:16px;display:none}
-    .lc-btn{
-      width:100%;background:linear-gradient(135deg,var(--orange),#d95e1e);
-      color:white;border:none;cursor:pointer;padding:15px;border-radius:50px;
-      font-size:1rem;font-weight:700;font-family:'DM Sans',sans-serif;
-      box-shadow:0 6px 24px rgba(244,112,42,.4);transition:all .2s;
-      display:flex;align-items:center;justify-content:center;gap:10px;
-    }
-    .lc-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(244,112,42,.55)}
-    .lc-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-    .lc-note{margin-top:20px;font-size:.76rem;color:rgba(255,255,255,.35);text-align:center;line-height:1.6}
+  main{max-width:720px;margin:0 auto;padding:28px 20px 56px}
+  .bloque{margin-top:36px}
+  .bloque > h2{margin-bottom:6px}
+  .bloque > .muted{margin-bottom:16px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+  .panel + .panel{margin-top:12px}
 
-    /* PORTAL SCREEN */
-    #portalScreen{display:none;padding-top:88px;min-height:100vh}
+  /* Formularios */
+  label,.lbl{display:block;font-weight:600;margin-bottom:6px}
+  .ayuda{font-size:.92rem;color:var(--ink-2);margin:-2px 0 8px}
+  input[type=text],input[type=tel],input[type=date],input[type=number],select,textarea{
+    width:100%;min-height:56px;padding:12px 14px;font:inherit;color:var(--ink);background:var(--surface);
+    border:2px solid var(--line);border-radius:var(--r-s);appearance:none;-webkit-appearance:none}
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%),linear-gradient(135deg,var(--ink-2) 50%,transparent 50%);
+    background-position:calc(100% - 22px) 50%,calc(100% - 15px) 50%;background-size:7px 7px;background-repeat:no-repeat;padding-right:40px}
+  textarea{min-height:96px;resize:vertical}
+  input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible,.op input:focus-visible + span{
+    outline:3px solid var(--orange);outline-offset:2px}
+  .campo{margin-top:20px}
+  .fnac{display:grid;grid-template-columns:1fr 1.7fr 1.3fr;gap:10px}
+  .fnac label{font-weight:400;font-size:.9rem;color:var(--ink-2);margin-bottom:4px}
+  .ops{display:grid;gap:10px}
+  .op{display:block;position:relative;margin:0;font-weight:500;cursor:pointer}
+  .op input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .op span{display:flex;align-items:center;gap:12px;min-height:56px;padding:12px 14px;border:2px solid var(--line);border-radius:var(--r-s);background:var(--surface)}
+  .op span::before{content:"";flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--ink-2)}
+  .op input:checked + span{border-color:var(--accent);background:var(--tint)}
+  .op input:checked + span::before{border:7px solid var(--accent)}
+  .op small{display:block;color:var(--ink-2);font-weight:400}
+  .trampa{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 
-    /* HEADER DEL PACIENTE */
-    .pt-header{
-      background:linear-gradient(135deg,var(--blue-d),var(--blue));
-      padding:40px 5% 36px;color:white;
-    }
-    .pt-greeting{font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--sky);margin-bottom:6px}
-    .pt-name{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;margin-bottom:4px}
-    .pt-dni{font-size:.85rem;color:rgba(255,255,255,.5)}
-    .pt-logout{
-      float:right;margin-top:-60px;
-      background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-      color:rgba(255,255,255,.7);padding:8px 18px;border-radius:50px;
-      font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;
-      transition:all .2s;
-    }
-    .pt-logout:hover{background:rgba(255,255,255,.18);color:white}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:12px 26px;border-radius:50px;
+    font:inherit;font-weight:700;text-decoration:none;border:2px solid transparent;cursor:pointer;text-align:center}
+  .btn.pri{background:var(--orange);color:#1b0c02}
+  .btn.pri:hover{background:#ff8442}
+  .btn.sec{background:transparent;color:var(--accent);border-color:var(--accent)}
+  .btn.sec:hover{background:var(--tint)}
+  .btn.wa{background:#128C4B;color:#fff}
+  .btn.ancho{width:100%}
+  .btn[disabled]{opacity:.6;cursor:default}
+  .fila-btn{display:grid;gap:12px;margin-top:20px}
+  @media (min-width:560px){.fila-btn.dos{grid-template-columns:1fr 1fr}}
 
-    /* CONTENIDO */
-    .pt-content{padding:36px 5%;max-width:1100px;margin:0 auto}
+  .aviso{margin-top:16px;padding:14px 16px;border-radius:var(--r-s);font-weight:500}
+  .aviso.mal{background:var(--bad-bg);color:var(--bad)}
+  .aviso.info{background:var(--tint);color:var(--ink)}
+  .aviso:empty{display:none}
 
-    /* SIN RUTINAS */
-    .empty-state{text-align:center;padding:80px 20px}
-    .empty-icon{font-size:3rem;margin-bottom:16px;opacity:.4}
-    .empty-title{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--blue);margin-bottom:8px}
-    .empty-sub{font-size:.9rem;color:var(--gray);line-height:1.7}
+  /* Semana */
+  .semana{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  .dia{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);padding:10px 4px 12px;text-align:center;min-height:104px}
+  .dia .n{font-size:.85rem;font-weight:600;color:var(--ink-2)}
+  .dia.con{border-color:transparent;background:var(--tint)}
+  .dia.con .n{color:var(--ink)}
+  .dia.hoy{box-shadow:inset 0 0 0 2px var(--accent)}
+  .dia .hoytxt{font-size:.75rem;color:var(--ink-2);line-height:1}
+  .turno{display:block;margin:8px auto 0;padding:5px 2px;border-radius:8px;font-weight:700;font-size:1rem;line-height:1.1;max-width:64px}
+  .turno.gimnasio{background:var(--blue);color:#fff}
+  .turno.pilates{background:transparent;color:var(--orange-d);border:2px solid var(--orange-d)}
+  .ref{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:12px;font-size:.92rem;color:var(--ink-2)}
+  .ref i{display:inline-block;width:18px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+  .ref .gimnasio{background:var(--blue)}
+  .ref .pilates{border:2px solid var(--orange-d)}
 
-    /* RUTINA CARD */
-    .rutinas-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--blue);margin-bottom:6px}
-    .rutinas-sub{font-size:.85rem;color:var(--gray);margin-bottom:28px}
-    .rutina-card{
-      background:white;border-radius:20px;
-      box-shadow:var(--sh);margin-bottom:24px;overflow:hidden;
-    }
-    .rc-header{
-      background:linear-gradient(135deg,var(--blue-d),var(--blue));
-      padding:24px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
-    }
-    .rc-title{font-family:'Playfair Display',serif;font-size:1.15rem;color:white;font-weight:700}
-    .rc-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
-    .rc-chip{
-      font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-      padding:4px 12px;border-radius:50px;
-    }
-    .chip-fase{background:rgba(91,184,212,.25);color:var(--sky)}
-    .chip-tipo{background:rgba(244,112,42,.25);color:var(--orange-l)}
-    .chip-lesion{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
-    .rc-dates{font-size:.78rem;color:rgba(255,255,255,.5);text-align:right}
-    .rc-dates b{color:rgba(255,255,255,.8)}
+  .serv{display:grid;gap:4px}
+  .serv .linea{color:var(--ink-2)}
+  .par{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .chip{display:inline-block;padding:5px 12px;border-radius:50px;font-size:.9rem;font-weight:700;white-space:nowrap}
+  .chip.ok{background:var(--ok-bg);color:var(--ok)}
+  .chip.warn{background:var(--warn-bg);color:var(--warn)}
+  .chip.bad{background:var(--bad-bg);color:var(--bad)}
+  .chip.neutro{background:var(--tint);color:var(--ink)}
 
-    /* TABLA EJERCICIOS */
-    .rc-body{padding:24px 28px;overflow-x:auto}
-    .ej-table{width:100%;border-collapse:collapse;font-size:.88rem}
-    .ej-table th{
-      text-align:left;font-size:.7rem;font-weight:700;letter-spacing:.1em;
-      text-transform:uppercase;color:var(--orange);padding:0 12px 12px;
-      border-bottom:2px solid var(--orange-bg);
-    }
-    .ej-table td{padding:12px;border-bottom:1px solid #f1f5f9;color:var(--dark);vertical-align:top}
-    .ej-table tr:last-child td{border-bottom:none}
-    .ej-table tr:hover td{background:#f8faff}
-    .ej-num{
-      width:28px;height:28px;border-radius:50%;
-      background:var(--blue-bg);color:var(--blue);
-      font-size:.75rem;font-weight:700;
-      display:inline-flex;align-items:center;justify-content:center;
-    }
-    .ej-name{font-weight:600;color:var(--blue)}
-    .ej-obs{font-size:.8rem;color:var(--gray);margin-top:4px;font-style:italic}
-    .badge-num{
-      display:inline-flex;align-items:center;justify-content:center;
-      min-width:32px;padding:4px 10px;border-radius:50px;
-      font-size:.8rem;font-weight:700;
-    }
-    .bn-series{background:var(--blue-bg);color:var(--blue)}
-    .bn-reps{background:var(--orange-bg);color:var(--orange)}
-    .bn-desc{background:var(--sky-bg);color:#2a7a93}
-    .no-ej{padding:20px;text-align:center;color:var(--gray);font-size:.88rem;font-style:italic}
+  .pedido{display:grid;gap:6px}
+  .pedido .resp{margin-top:6px;padding:10px 12px;border-left:4px solid var(--sky);background:var(--tint);border-radius:0 8px 8px 0}
 
-    /* LOADING */
-    #loadingOverlay{
-      position:fixed;inset:0;z-index:9999;
-      background:rgba(15,20,40,.85);backdrop-filter:blur(8px);
-      display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;
-    }
-    #loadingOverlay.show{display:flex}
-    .spinner{width:44px;height:44px;border:3px solid rgba(91,184,212,.2);border-top-color:var(--sky);border-radius:50%;animation:spin .8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .loading-txt{color:rgba(255,255,255,.7);font-size:.9rem;font-weight:500}
-
-    /* TOAST */
-    #toast{position:fixed;bottom:28px;right:28px;z-index:9999;background:var(--blue);color:white;padding:14px 20px;border-radius:12px;font-size:.88rem;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.25);transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:10px;pointer-events:none;max-width:320px}
-    #toast.show{transform:translateY(0);opacity:1}
-    #toast.ok{background:#16a34a}
-    #toast.err{background:#dc2626}
-
-    @media(max-width:700px){
-      .login-card{padding:36px 24px}
-      .pt-logout{float:none;display:block;margin:12px 0 0;width:fit-content}
-      .pt-header{padding-bottom:20px}
-      .rc-header{flex-direction:column;align-items:flex-start}
-      .rc-dates{text-align:left}
-      .ej-table th:nth-child(5),.ej-table td:nth-child(5){display:none}
-    }
-  </style>
+  .volver{display:inline-block;margin-bottom:18px}
+  .pie{margin-top:44px;padding-top:24px;border-top:1px solid var(--line);display:grid;gap:14px}
+  [hidden]{display:none !important}
+  @media (prefers-reduced-motion:no-preference){.btn,.op span{transition:background-color .15s,border-color .15s}}
+</style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <a href="index.html" class="nav-logo">
-    <div>
-      <div class="nav-brand">Centro <span>Kairós</span></div>
-      <div class="nav-tag">Portal Pacientes</div>
-    </div>
-  </a>
-  <a href="index.html" class="nav-back">← Volver al sitio</a>
-</nav>
+<header class="top">
+  <a class="logo" href="/" aria-label="Ir al sitio de Centro Kairós"><img src="images/img1.png" alt="" onerror="this.parentNode.hidden=true"/></a>
+  <div class="marca">Centro Kairós<span>Portal del paciente</span></div>
+  <div class="sp"></div>
+  <button class="linkb" id="btn-salir" hidden>Salir</button>
+</header>
 
-<!-- LOADING -->
-<div id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-txt">Cargando tus rutinas…</div>
-</div>
+<main id="app"></main>
 
-<!-- TOAST -->
-<div id="toast"><span id="toastIcon">✅</span><span id="toastMsg"></span></div>
-
-<!-- ════════════════════════════
-     PANTALLA LOGIN
-════════════════════════════ -->
-<div id="loginScreen">
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
-  <div class="login-card">
-    <div class="lc-badge"><span class="lc-badge-dot"></span> Portal Pacientes</div>
-    <h1 class="lc-title">Tu <em>rutina</em> personalizada</h1>
-    <p class="lc-sub">Ingresá tu DNI para ver los ejercicios y rutinas que preparó tu kinesiólogo.</p>
-
-    <div class="lc-grp">
-      <label>DNI</label>
-      <input type="text" id="dniInput" placeholder="Ej: 12648142" inputmode="numeric"
-             maxlength="12" autocomplete="off"
-             onkeydown="if(event.key==='Enter') doLogin()"/>
-    </div>
-    <div class="lc-grp" id="fnacGrp" style="display:none">
-      <label>Fecha de nacimiento</label>
-      <input type="date" id="fnacInput"
-             onkeydown="if(event.key==='Enter') doLogin()"/>
-    </div>
-    <div class="lc-err" id="loginErr">❌ No encontramos ese DNI. Verificá el número o consultá con tu kinesiólogo.</div>
-    <button class="lc-btn" id="loginBtn" onclick="doLogin()">
-      <span id="loginBtnTxt">Ver mis rutinas</span>
-      <span id="loginBtnIcon">→</span>
-    </button>
-    <p class="lc-note">Solo se muestran las rutinas asociadas al DNI ingresado.</p>
-  </div>
-</div>
-
-<!-- ════════════════════════════
-     PANTALLA PORTAL
-════════════════════════════ -->
-<div id="portalScreen">
-  <div class="pt-header">
-    <button class="pt-logout" onclick="doLogout()">🔒 Cerrar sesión</button>
-    <div class="pt-greeting">Bienvenido/a</div>
-    <div class="pt-name" id="ptName">–</div>
-    <div class="pt-dni" id="ptDni">–</div>
-  </div>
-
-  <div class="pt-content">
-    <div id="rutinasList"></div>
-  </div>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-  // ══════════════════════════════
-  // CONFIG
-  // ══════════════════════════════
-  // URL del puente de la app Kairós (el mismo Apps Script que usa la app de gestión).
-  // Si algún día lo re-desplegás con otra URL, actualizala acá.
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxGI7eIaHvUDsur1mNaLnpfamNuBWiJ7v5-7tleVYnjQQnkAofwljsnGhZ6Mx9VN2cW/exec';
+/* ===== Conexión con Supabase (la misma base que la app de gestión) =====
+   La clave es la "Publishable key": es pública y solo permite llamar a las
+   funciones portal_* creadas con portal-paciente.sql. Nunca poner acá la Secret key. */
+const SUPABASE_URL = 'https://zkmdvbztcuptzqmyaczq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UkaEpnVwQeqW7pxhhIJGzQ_2ujdcFdl';
+const WHATSAPP = '543435419605';
 
-  // Poné true SOLO si también lo activaste en el Apps Script.
-  const PEDIR_FECHA_NAC = false;
+const SERV = { gimnasio: 'Gimnasio para Adultos', pilates: 'Pilates Terapéutico' };
+const TIPO = { ortopedia: 'elementos ortopédicos', magnetoterapia: 'magnetoterapia' };
+const DIAS = [['lun', 'Lun', 'Lunes'], ['mar', 'Mar', 'Martes'], ['mie', 'Mié', 'Miércoles'], ['jue', 'Jue', 'Jueves'], ['vie', 'Vie', 'Viernes'], ['sab', 'Sáb', 'Sábado']];
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const ESTADO = {
+  pendiente: ['Pendiente de confirmación', 'warn'], confirmado: ['Confirmado', 'ok'], entregado: ['Lo tenés vos', 'ok'],
+  devuelto: ['Devuelto', 'neutro'], cancelado: ['Cancelado', 'neutro'], rechazado: ['No disponible', 'bad']
+};
+const DURACIONES = ['1 semana', '2 semanas', '1 mes', 'Más de un mes', 'Todavía no sé'];
+const EQUIPOS_BASE = [
+  { tipo: 'ortopedia', nombre: 'Muletas' }, { tipo: 'ortopedia', nombre: 'Andador' },
+  { tipo: 'ortopedia', nombre: 'Silla de ruedas' }, { tipo: 'ortopedia', nombre: 'Bastón' },
+  { tipo: 'magnetoterapia', nombre: 'Equipo de magnetoterapia' }
+];
 
-  const MENSAJES = {
-    DNI_INVALIDO:   'Ingresá un DNI válido (solo números).',
-    NO_ENCONTRADO:  'No encontramos esos datos. Verificalos o consultá con tu kinesiólogo.',
-    INACTIVO:       'Tu plan no está activo en este momento. Acercate al centro o escribinos por WhatsApp para reactivarlo.',
-    ERROR_SERVIDOR: 'No pudimos conectarnos. Probá de nuevo en unos minutos.',
-    SIN_CONFIGURAR: 'El portal todavía no está configurado. Avisale al centro.'
-  };
+const $ = id => document.getElementById(id);
+const app = $('app');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pesos = n => '$ ' + Math.round(+n || 0).toLocaleString('es-AR');
+const hoyISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const fechaCorta = iso => { if (!iso) return ''; const [a, m, d] = String(iso).slice(0, 10).split('-'); return +d + ' de ' + MESES[+m - 1] + (a !== String(new Date().getFullYear()) ? ' de ' + a : ''); };
+const horaCorta = h => { const m = String(h || '').match(/^(\d{1,2}):(\d{2})/); return m ? +m[1] + ':' + m[2] : String(h || ''); };
+const nombrePila = n => { const t = String(n || '').trim(); const p = t.includes(',') ? t.split(',')[1].trim() : t; return p.split(/\s+/)[0] || ''; };
+const waLink = txt => 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(txt);
 
-  // ══════════════════════════════
-  // UTILIDADES
-  // ══════════════════════════════
-  function esc(v) {
-    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
+let sb = null;
+const S = { sesion: null, datos: null, equipos: null, vista: 'ingreso', form: null, hecho: null };
 
-  function showToast(msg, type) {
-    type = type || 'ok';
-    const t = document.getElementById('toast');
-    document.getElementById('toastMsg').textContent = msg;
-    document.getElementById('toastIcon').textContent = type === 'ok' ? '✅' : '❌';
-    t.className = 'show ' + type;
-    setTimeout(function () { t.className = ''; }, 4500);
-  }
+function conectar() {
+  if (sb) return sb;
+  if (!window.supabase) throw new Error('sin-libreria');
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+  return sb;
+}
+async function llamar(fn, args) {
+  const { data, error } = await conectar().rpc(fn, args);
+  if (error) throw error;
+  return data || {};
+}
+function textoError(e) {
+  const m = String((e && (e.message || e.code)) || e);
+  if (m === 'sin-libreria' || /Failed to fetch|NetworkError|Load failed/i.test(m)) return 'No hay conexión con el centro en este momento. Revisá tu internet y probá de nuevo.';
+  if ((e && e.code === 'PGRST202') || /Could not find the function/i.test(m)) return 'El portal todavía no está activado. Avisanos por WhatsApp.';
+  return 'Algo no funcionó. Probá de nuevo en un momento o escribinos por WhatsApp.';
+}
+const MOTIVOS = {
+  no_coincide: 'No encontramos esos datos. Revisá el DNI y la fecha de nacimiento. Si siguen sin funcionar, escribinos por WhatsApp y lo vemos.',
+  bloqueado: 'Hubo varios intentos seguidos con este DNI. Esperá 15 minutos y probá de nuevo.',
+  inactivo: 'Tu ficha figura inactiva. Escribinos por WhatsApp y la reactivamos.',
+  faltan_datos: 'Faltan datos para enviar el pedido. Revisá los campos.',
+  falta_direccion: 'Falta la dirección donde se va a usar el equipo.',
+  limite: 'Ya tenés varios pedidos sin confirmar. Escribinos por WhatsApp y los vemos juntos.',
+  no_se_puede: 'Ese pedido ya no se puede cancelar desde acá. Escribinos por WhatsApp.'
+};
 
-  function showLoading(v) {
-    document.getElementById('loadingOverlay').classList.toggle('show', v);
-  }
+async function cargarEquipos() {
+  if (S.equipos) return S.equipos;
+  try {
+    const { data, error } = await conectar().from('portal_equipos').select('tipo, nombre, detalle, precio_texto').order('orden');
+    S.equipos = !error && data && data.length ? data : EQUIPOS_BASE;
+  } catch (e) { S.equipos = EQUIPOS_BASE; }
+  return S.equipos;
+}
 
-  function showError(msg) {
-    const box = document.getElementById('loginErr');
-    box.textContent = '❌ ' + msg;
-    box.style.display = 'block';
-  }
+/* ===== Sesión: DNI y fecha quedan solo mientras la pestaña está abierta ===== */
+const guardarSesion = s => { S.sesion = s; try { s ? sessionStorage.setItem('kairos-portal', JSON.stringify(s)) : sessionStorage.removeItem('kairos-portal'); } catch (e) {} };
+const leerSesion = () => { try { return JSON.parse(sessionStorage.getItem('kairos-portal') || 'null'); } catch (e) { return null; } };
 
-  function setCargando(v) {
-    document.getElementById('loginBtn').disabled = v;
-    document.getElementById('loginBtnTxt').textContent = v ? 'Buscando…' : 'Ver mis rutinas';
-    document.getElementById('loginBtnIcon').textContent = v ? '⏳' : '→';
-    showLoading(v);
-  }
+async function ingresar(dni, fnac) {
+  const r = await llamar('portal_ingresar', { p_dni: dni, p_fnac: fnac });
+  if (!r.ok) return r;
+  guardarSesion({ dni, fnac });
+  S.datos = r;
+  return r;
+}
+async function refrescar() {
+  if (!S.sesion) return;
+  const r = await llamar('portal_ingresar', { p_dni: S.sesion.dni, p_fnac: S.sesion.fnac });
+  if (r.ok) S.datos = r;
+}
+function salir() { guardarSesion(null); S.datos = null; ir('ingreso'); }
 
-  // ══════════════════════════════
-  // LOGIN
-  // ══════════════════════════════
-  async function doLogin() {
-    const dni = document.getElementById('dniInput').value.replace(/\D/g, '');
-    document.getElementById('loginErr').style.display = 'none';
+/* ===== Navegación ===== */
+function ir(vista, extra) {
+  S.vista = vista;
+  if (extra) Object.assign(S, extra);
+  pintar();
+  window.scrollTo(0, 0);
+  const h = app.querySelector('h1'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+}
+function pintar() {
+  $('btn-salir').hidden = !S.datos;
+  app.innerHTML = ({ ingreso: vistaIngreso, inicio: vistaInicio, form: vistaForm, hecho: vistaHecho, cargando: () => '<p class="muted">Cargando…</p>' })[S.vista]();
+}
 
-    if (dni.length < 6) { showError(MENSAJES.DNI_INVALIDO); return; }
+/* ===== Ingreso ===== */
+function vistaIngreso() {
+  return `
+  <h1>Tu espacio en Centro Kairós</h1>
+  <p class="muted" style="margin-top:10px">Mirá tus horarios y tu cuota, y pedí el alquiler de equipos sin llamar.</p>
 
-    if (API_URL.indexOf('http') !== 0) {
-      showError(MENSAJES.SIN_CONFIGURAR);
-      return;
-    }
+  <section class="panel" style="margin-top:24px">
+    <h2>Ingresar</h2>
+    <div class="campo">
+      <label for="dni">Tu DNI</label>
+      <p class="ayuda">Solo números, sin puntos.</p>
+      <input id="dni" type="text" inputmode="numeric" autocomplete="off" maxlength="11"/>
+    </div>
+    <div class="campo">
+      <span class="lbl" id="l-fnac">Tu fecha de nacimiento</span>
+      <div class="fnac" role="group" aria-labelledby="l-fnac">
+        <div><label for="fd">Día</label><input id="fd" type="text" inputmode="numeric" maxlength="2" autocomplete="bday-day"/></div>
+        <div><label for="fm">Mes</label><select id="fm" autocomplete="bday-month"><option value="">Elegí</option>${MESES.map((m, i) => `<option value="${i + 1}">${m[0].toUpperCase() + m.slice(1)}</option>`).join('')}</select></div>
+        <div><label for="fa">Año</label><input id="fa" type="text" inputmode="numeric" maxlength="4" autocomplete="bday-year"/></div>
+      </div>
+    </div>
+    <div class="aviso mal" id="msg" role="alert"></div>
+    <div class="fila-btn"><button class="btn pri ancho" id="btn-ingresar">Ingresar</button></div>
+  </section>
 
-    let url = API_URL + '?action=portalRutinas&dni=' + encodeURIComponent(dni);
+  <section class="bloque">
+    <h2>¿Todavía no sos paciente?</h2>
+    <p class="muted">Igual podés pedir el alquiler de un equipo. Te respondemos por WhatsApp.</p>
+    <div class="fila-btn dos" style="margin-top:0">
+      <button class="btn sec" data-pedir="ortopedia">Alquilar elementos ortopédicos</button>
+      <button class="btn sec" data-pedir="magnetoterapia">Alquilar magnetoterapia</button>
+    </div>
+  </section>
+  ${pie()}`;
+}
 
-    if (PEDIR_FECHA_NAC) {
-      const fnac = document.getElementById('fnacInput').value;
-      if (!fnac) { showError('Ingresá tu fecha de nacimiento.'); return; }
-      url += '&fnac=' + encodeURIComponent(fnac);
-    }
+async function onIngresar() {
+  const msg = $('msg'), b = $('btn-ingresar');
+  const dni = $('dni').value.replace(/\D/g, ''), d = +$('fd').value, m = +$('fm').value, a = +$('fa').value;
+  const f = new Date(a, m - 1, d);
+  if (dni.length < 6) { msg.textContent = 'Escribí tu DNI completo, solo números.'; $('dni').focus(); return; }
+  if (!d || !m || a < 1900 || a > new Date().getFullYear() || f.getDate() !== d || f.getMonth() !== m - 1) { msg.textContent = 'Revisá tu fecha de nacimiento: día, mes y año con cuatro números.'; return; }
+  const fnac = a + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  msg.textContent = ''; b.disabled = true; b.textContent = 'Ingresando…';
+  try {
+    const r = await ingresar(dni, fnac);
+    if (r.ok) return ir('inicio');
+    msg.textContent = MOTIVOS[r.motivo] || MOTIVOS.no_coincide;
+  } catch (e) { msg.textContent = textoError(e); }
+  b.disabled = false; b.textContent = 'Ingresar';
+}
 
-    setCargando(true);
-
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-
-      let data;
-      try {
-        data = await res.json();
-      } catch (e) {
-        throw new Error('Respuesta inesperada del servidor');
-      }
-
-      if (!data.ok) {
-        showError(MENSAJES[data.error] || MENSAJES.ERROR_SERVIDOR);
-        return;
-      }
-
-      showPortal(data.paciente, data.rutinas || []);
-      showToast('¡Bienvenido/a! Acá están tus rutinas 💪', 'ok');
-
-    } catch (err) {
-      console.error(err);
-      showError(MENSAJES.ERROR_SERVIDOR);
-    } finally {
-      setCargando(false);
-    }
-  }
-
-  // ══════════════════════════════
-  // MOSTRAR PORTAL
-  // ══════════════════════════════
-  function showPortal(paciente, rutinas) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('portalScreen').style.display = 'block';
-    document.getElementById('ptName').textContent = paciente.nombre;
-    document.getElementById('ptDni').textContent = 'DNI: ' + paciente.dni;
-    window.scrollTo(0, 0);
-
-    const list = document.getElementById('rutinasList');
-    list.innerHTML = '';
-
-    if (rutinas.length === 0) {
-      list.innerHTML =
-        '<div class="empty-state">' +
-          '<div class="empty-icon">🏃</div>' +
-          '<div class="empty-title">Todavía no tenés rutinas asignadas</div>' +
-          '<div class="empty-sub">Consultá con tu kinesiólogo para que te arme tu plan de ejercicios.</div>' +
-        '</div>';
-      return;
-    }
-
-    const plural = rutinas.length > 1;
-    list.innerHTML =
-      '<div class="rutinas-title">Tus rutinas</div>' +
-      '<div class="rutinas-sub">Tenés ' + rutinas.length + ' rutina' + (plural ? 's' : '') +
-      ' asignada' + (plural ? 's' : '') + '.</div>';
-
-    rutinas.forEach(function (r) {
-      list.appendChild(buildRutinaCard(r));
-    });
-  }
-
-  function buildRutinaCard(r) {
-    const card = document.createElement('div');
-    card.className = 'rutina-card';
-
-    const chips = [
-      r.fase     ? '<span class="rc-chip chip-fase">Fase ' + esc(r.fase) + '</span>'    : '',
-      r.objetivo ? '<span class="rc-chip chip-tipo">' + esc(r.objetivo) + '</span>'     : '',
-      r.obs      ? '<span class="rc-chip chip-lesion">' + esc(r.obs) + '</span>'        : ''
-    ].filter(Boolean).join('');
-
-    const fechas = (r.fechaInicio || r.fechaFin)
-      ? '<div class="rc-dates">' +
-          (r.fechaInicio ? '<div>Inicio: <b>' + esc(r.fechaInicio) + '</b></div>' : '') +
-          (r.fechaFin    ? '<div>Fin: <b>'    + esc(r.fechaFin)    + '</b></div>' : '') +
-        '</div>'
-      : '';
-
-    const ejercicios = r.ejercicios || [];
-    let ejHtml;
-
-    if (ejercicios.length === 0) {
-      ejHtml = '<div class="no-ej">Todavía no hay ejercicios cargados en esta rutina.</div>';
-    } else {
-      const filas = ejercicios.map(function (e, i) {
-        return '<tr>' +
-          '<td><span class="ej-num">' + (i + 1) + '</span></td>' +
-          '<td>' +
-            '<div class="ej-name">' + esc(e.nombre || '–') + '</div>' +
-            (e.obs ? '<div class="ej-obs">' + esc(e.obs) + '</div>' : '') +
-          '</td>' +
-          '<td><span class="badge-num bn-series">' + esc(e.series || '–') + '</span></td>' +
-          '<td><span class="badge-num bn-reps">'   + esc(e.reps   || '–') + '</span></td>' +
-          '<td>' + (e.peso ? esc(e.peso) : '–') + '</td>' +
-          '<td>' + (e.descanso ? '<span class="badge-num bn-desc">' + esc(e.descanso) + '</span>' : '–') + '</td>' +
-        '</tr>';
-      }).join('');
-
-      ejHtml =
-        '<table class="ej-table">' +
-          '<thead><tr>' +
-            '<th>#</th><th>Ejercicio</th><th>Series</th>' +
-            '<th>Reps</th><th>Peso</th><th>Descanso</th>' +
-          '</tr></thead>' +
-          '<tbody>' + filas + '</tbody>' +
-        '</table>';
-    }
-
-    card.innerHTML =
-      '<div class="rc-header">' +
-        '<div>' +
-          '<div class="rc-title">' + esc(r.nombre || 'Rutina') + '</div>' +
-          (chips ? '<div class="rc-meta">' + chips + '</div>' : '') +
-        '</div>' +
-        fechas +
-      '</div>' +
-      '<div class="rc-body">' + ejHtml + '</div>';
-
-    return card;
-  }
-
-  // ══════════════════════════════
-  // LOGOUT
-  // ══════════════════════════════
-  function doLogout() {
-    document.getElementById('dniInput').value = '';
-    const fnac = document.getElementById('fnacInput');
-    if (fnac) fnac.value = '';
-    document.getElementById('rutinasList').innerHTML = '';
-    document.getElementById('loginErr').style.display = 'none';
-    document.getElementById('portalScreen').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'flex';
-    showToast('Sesión cerrada 🔒', 'ok');
-  }
-
-  // ══════════════════════════════
-  // INICIO
-  // ══════════════════════════════
-  window.addEventListener('DOMContentLoaded', function () {
-    if (PEDIR_FECHA_NAC) {
-      document.getElementById('fnacGrp').style.display = 'flex';
-    }
-    setTimeout(function () { document.getElementById('dniInput').focus(); }, 300);
+/* ===== Inicio del paciente ===== */
+function semana(servs) {
+  const m = {};
+  servs.forEach(s => {
+    if (s.actividad === 'gimnasio') (s.dias || []).forEach(d => { if (s.hora) (m[d] = m[d] || []).push({ h: s.hora, a: 'gimnasio' }); });
+    (s.turnos || []).forEach(t => (m[t.dia] = m[t.dia] || []).push({ h: t.hora, a: s.actividad }));
   });
+  if (!Object.keys(m).length) return '<div class="panel"><p>Todavía no tenés horarios cargados. Consultá en recepción o escribinos por WhatsApp.</p></div>';
+  const hoy = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'][new Date().getDay()];
+  const acts = [...new Set(servs.map(s => s.actividad))];
+  return `<div class="semana">${DIAS.map(([k, corto, largo]) => {
+    const L = (m[k] || []).sort((x, y) => String(x.h).localeCompare(String(y.h)));
+    return `<div class="dia${L.length ? ' con' : ''}${k === hoy ? ' hoy' : ''}"><div class="n"><abbr title="${largo}" style="text-decoration:none">${corto}</abbr></div>${k === hoy ? '<div class="hoytxt">hoy</div>' : ''}${L.map(t => `<span class="turno ${t.a}" title="${SERV[t.a]}">${esc(horaCorta(t.h))}</span>`).join('') || '<span class="muted" aria-hidden="true" style="display:block;margin-top:14px">–</span>'}</div>`;
+  }).join('')}</div>
+  <div class="ref">${acts.map(a => `<span><i class="${a}"></i>${SERV[a]}</span>`).join('')}</div>`;
+}
+
+function tarjetaServicio(s) {
+  const lineas = [];
+  if (s.plan) lineas.push('Plan ' + esc(s.plan) + (s.clases_semana ? ' (' + s.clases_semana + (s.clases_semana == 1 ? ' clase' : ' clases') + ' por semana)' : ''));
+  const profes = s.actividad === 'gimnasio' ? [s.profe] : (s.turnos || []).map(t => t.profe);
+  const P = [...new Set(profes.filter(Boolean))];
+  if (P.length) lineas.push('Con ' + P.map(esc).join(' y '));
+  return `<div class="panel serv"><h3>${SERV[s.actividad]}</h3>${lineas.map(l => `<p class="linea">${l}</p>`).join('') || '<p class="linea">Sin plan cargado todavía.</p>'}</div>`;
+}
+
+function filaCuota(s) {
+  const c = s.cuota; if (!c) return '';
+  const imp = +c.importe || 0, pag = +c.pagado || 0;
+  let chip, det = '';
+  if (imp > 0 && pag >= imp || (!imp && pag > 0)) chip = '<span class="chip ok">Pagada</span>';
+  else if (imp > 0 && pag > 0) { chip = '<span class="chip warn">Pago parcial</span>'; det = `Pagaste ${pesos(pag)} de ${pesos(imp)}. Falta ${pesos(imp - pag)}.`; }
+  else if (imp > 0) { chip = '<span class="chip warn">Pendiente</span>'; det = pesos(imp); }
+  else return '';
+  return `<div class="panel"><div class="par"><h3>${SERV[s.actividad]}</h3>${chip}</div>${det ? `<p class="muted" style="margin-top:4px">${det}</p>` : ''}</div>`;
+}
+
+function tarjetaPedido(p) {
+  const [txt, cls] = ESTADO[p.estado] || [p.estado, 'neutro'];
+  const det = [p.desde ? 'Desde el ' + fechaCorta(p.desde) : '', p.duracion || ''].filter(Boolean).join(', ');
+  return `<div class="panel pedido">
+    <div class="par"><h3>${esc(p.equipo)}</h3><span class="chip ${cls}">${txt}</span></div>
+    <p class="muted small">Pedido N.º ${p.id}, enviado el ${fechaCorta(p.creado)}${det ? '. ' + esc(det) : ''}</p>
+    ${p.respuesta ? `<p class="resp">${esc(p.respuesta)}</p>` : ''}
+    ${p.estado === 'pendiente' ? `<div><button class="linkb" data-cancelar="${p.id}" style="padding-left:0">Cancelar este pedido</button></div>` : ''}
+  </div>`;
+}
+
+function vistaInicio() {
+  const D = S.datos, servs = D.servicios || [], sol = D.solicitudes || [];
+  const cuotas = servs.map(filaCuota).join('');
+  const per = (servs.find(s => s.cuota) || {}).cuota;
+  return `
+  <h1>Hola, ${esc(nombrePila(D.nombre))}</h1>
+
+  <section class="bloque" style="margin-top:24px">
+    <h2>Tu semana</h2>
+    <p class="muted">Tus días y horarios en el centro.</p>
+    ${semana(servs)}
+    <div style="margin-top:14px">${servs.map(tarjetaServicio).join('')}</div>
+  </section>
+
+  ${cuotas ? `<section class="bloque"><h2>Cuota de ${MESES[+per.periodo.slice(5, 7) - 1]}</h2><p class="muted">Si ves algo que no coincide, avisanos y lo revisamos.</p>${cuotas}</section>` : ''}
+
+  <section class="bloque">
+    <h2>Alquiler de equipos</h2>
+    <p class="muted">Como paciente del centro, tu pedido tiene prioridad sobre los equipos disponibles.</p>
+    <div class="fila-btn dos" style="margin-top:0">
+      <button class="btn pri" data-pedir="ortopedia">Pedir elementos ortopédicos</button>
+      <button class="btn pri" data-pedir="magnetoterapia">Pedir magnetoterapia</button>
+    </div>
+    <div class="aviso mal" id="msg" role="alert"></div>
+    ${sol.length ? `<h3 style="margin:26px 0 12px">Tus pedidos</h3>${sol.map(tarjetaPedido).join('')}` : ''}
+  </section>
+  ${pie()}`;
+}
+
+async function onCancelar(id) {
+  if (!confirm('¿Cancelar este pedido?')) return;
+  try {
+    const r = await llamar('portal_cancelar_solicitud', { p_dni: S.sesion.dni, p_fnac: S.sesion.fnac, p_id: +id });
+    await refrescar(); pintar();
+    if (!r.ok) $('msg').textContent = MOTIVOS[r.motivo] || MOTIVOS.no_se_puede;
+  } catch (e) { $('msg').textContent = textoError(e); }
+}
+
+/* ===== Formulario de alquiler ===== */
+async function abrirForm(tipo) {
+  ir('cargando');
+  await cargarEquipos();
+  ir('form', { form: { tipo } });
+}
+
+function vistaForm() {
+  const tipo = S.form.tipo, socio = !!S.datos, D = S.datos || {};
+  const L = S.equipos.filter(e => e.tipo === tipo);
+  const unico = L.length === 1;
+  return `
+  <button class="linkb volver" id="btn-volver" style="padding-left:0">Volver</button>
+  <h1>Alquilar ${TIPO[tipo]}</h1>
+  <p class="muted" style="margin-top:10px">Completá el pedido y te confirmamos por WhatsApp si el equipo está disponible y cuánto sale.</p>
+
+  <section class="panel" style="margin-top:24px">
+    ${socio ? '' : `
+    <div class="campo" style="margin-top:0"><label for="f-nombre">Nombre y apellido</label><input id="f-nombre" type="text" autocomplete="name" maxlength="120"/></div>
+    <div class="campo"><label for="f-tel">Tu WhatsApp</label><p class="ayuda">Con característica, por ejemplo 3435 123456.</p><input id="f-tel" type="tel" autocomplete="tel" maxlength="40"/></div>
+    <div class="campo"><label for="f-dni">DNI (opcional)</label><input id="f-dni" type="text" inputmode="numeric" maxlength="11"/></div>
+    <div class="trampa" aria-hidden="true"><label for="f-web">No completar</label><input id="f-web" type="text" tabindex="-1" autocomplete="off"/></div>`}
+
+    <div class="campo"${socio ? ' style="margin-top:0"' : ''}>
+      <span class="lbl" id="l-eq">¿Qué equipo necesitás?</span>
+      <div class="ops" role="radiogroup" aria-labelledby="l-eq">
+        ${L.map((e, i) => `<label class="op"><input type="radio" name="equipo" value="${esc(e.nombre)}"${unico && i === 0 ? ' checked' : ''}/><span><b style="font-weight:600">${esc(e.nombre)}${e.detalle || e.precio_texto ? `<small>${esc([e.detalle, e.precio_texto].filter(Boolean).join(', '))}</small>` : ''}</b></span></label>`).join('')}
+        <label class="op"><input type="radio" name="equipo" value="__otro"/><span>Otro</span></label>
+      </div>
+      <div id="otro-box" hidden style="margin-top:10px"><label for="f-otro">¿Cuál?</label><input id="f-otro" type="text" maxlength="120"/></div>
+    </div>
+
+    <div class="campo"><label for="f-desde">¿Desde qué día?</label><input id="f-desde" type="date" min="${hoyISO()}" value="${hoyISO()}"/></div>
+    <div class="campo"><label for="f-dur">¿Por cuánto tiempo?</label><select id="f-dur">${DURACIONES.map(d => `<option>${d}</option>`).join('')}</select></div>
+
+    <div class="campo">
+      <span class="lbl" id="l-dir">Dirección donde se va a usar</span>
+      ${socio && D.tiene_direccion ? `
+      <div class="ops" role="radiogroup" aria-labelledby="l-dir">
+        <label class="op"><input type="radio" name="dir" value="ficha" checked/><span>La que ya tienen en mi ficha</span></label>
+        <label class="op"><input type="radio" name="dir" value="otra"/><span>Otra dirección</span></label>
+      </div>
+      <div id="dir-box" hidden style="margin-top:10px"><label for="f-dir">Calle y número</label><input id="f-dir" type="text" autocomplete="street-address" maxlength="200"/></div>`
+      : `<input id="f-dir" type="text" aria-labelledby="l-dir" autocomplete="street-address" maxlength="200" placeholder="Calle y número"/>`}
+    </div>
+
+    ${socio ? `<div class="campo"><label for="f-tel">Otro teléfono (opcional)</label><p class="ayuda">${D.tel_fin ? 'Te escribimos al número terminado en ' + esc(D.tel_fin) + '. Completá esto solo si preferís otro.' : 'No tenemos tu teléfono en la ficha: dejanos uno para confirmarte.'}</p><input id="f-tel" type="tel" autocomplete="tel" maxlength="40"/></div>` : ''}
+
+    <div class="campo"><label for="f-para">¿Es para otra persona? (opcional)</label><p class="ayuda">Si es para un familiar, escribí su nombre.</p><input id="f-para" type="text" maxlength="120"/></div>
+    <div class="campo"><label for="f-notas">Algo más que debamos saber (opcional)</label><textarea id="f-notas" maxlength="500"></textarea></div>
+
+    <div class="aviso mal" id="msg" role="alert"></div>
+    <div class="fila-btn"><button class="btn pri ancho" id="btn-enviar">Enviar pedido</button></div>
+  </section>`;
+}
+
+async function onEnviar() {
+  const msg = $('msg'), b = $('btn-enviar'), socio = !!S.datos, D = S.datos || {}, v = id => ($(id) ? $(id).value.trim() : '');
+  const sel = document.querySelector('input[name=equipo]:checked');
+  const equipo = !sel ? '' : sel.value === '__otro' ? v('f-otro') : sel.value;
+  const dirSel = document.querySelector('input[name=dir]:checked');
+  const usarFicha = !!(dirSel && dirSel.value === 'ficha');
+  const err = (t, id) => { msg.textContent = t; if (id && $(id)) $(id).focus(); };
+
+  if (!socio && v('f-nombre').length < 3) return err('Escribí tu nombre y apellido.', 'f-nombre');
+  if (!socio && v('f-tel').replace(/\D/g, '').length < 8) return err('Escribí tu WhatsApp con característica.', 'f-tel');
+  if (socio && !D.tel_fin && v('f-tel').replace(/\D/g, '').length < 8) return err('Dejanos un teléfono para confirmarte el pedido.', 'f-tel');
+  if (!equipo) return err('Elegí qué equipo necesitás.');
+  if (!usarFicha && v('f-dir').length < 4) return err('Escribí la dirección donde se va a usar el equipo.', 'f-dir');
+  if ($('f-web') && $('f-web').value) return;
+
+  const pedido = { tipo: S.form.tipo, equipo, desde: v('f-desde'), duracion: v('f-dur'), direccion: usarFicha ? '' : v('f-dir'),
+    usar_direccion_ficha: usarFicha, telefono: v('f-tel'), para_quien: v('f-para'), notas: v('f-notas') };
+  if (!socio) { pedido.nombre = v('f-nombre'); pedido.dni = v('f-dni'); }
+
+  msg.textContent = ''; b.disabled = true; b.textContent = 'Enviando…';
+  try {
+    const r = socio
+      ? await llamar('portal_pedir_alquiler', { p_dni: S.sesion.dni, p_fnac: S.sesion.fnac, p_pedido: pedido })
+      : await llamar('portal_pedir_alquiler_publico', { p_pedido: pedido });
+    if (r.ok) {
+      if (socio) { try { await refrescar(); } catch (e) {} }
+      return ir('hecho', { hecho: { id: r.id, equipo, nombre: socio ? D.nombre : pedido.nombre } });
+    }
+    msg.textContent = r.motivo === 'limite' && !socio ? 'Ya recibimos varios pedidos desde este teléfono. Escribinos por WhatsApp y lo vemos.' : (MOTIVOS[r.motivo] || MOTIVOS.faltan_datos);
+    if (r.motivo === 'no_coincide' || r.motivo === 'inactivo') { salir(); return; }
+  } catch (e) { msg.textContent = textoError(e); }
+  b.disabled = false; b.textContent = 'Enviar pedido';
+}
+
+function vistaHecho() {
+  const h = S.hecho;
+  const txt = `Hola, soy ${h.nombre}. Acabo de pedir el alquiler de ${h.equipo} desde la web (pedido N.º ${h.id}).`;
+  return `
+  <h1>Recibimos tu pedido</h1>
+  <section class="panel" style="margin-top:24px">
+    <p><strong>${esc(h.equipo)}</strong>, pedido N.º ${h.id}.</p>
+    <p style="margin-top:10px">Avisanos por WhatsApp con el botón de abajo: así lo vemos enseguida y te confirmamos disponibilidad y precio.</p>
+    <div class="fila-btn">
+      <a class="btn wa ancho" href="${waLink(txt)}" target="_blank" rel="noopener">Avisar por WhatsApp</a>
+      <button class="btn sec ancho" id="btn-volver">${S.datos ? 'Volver a mi portal' : 'Volver al inicio'}</button>
+    </div>
+  </section>`;
+}
+
+function pie() {
+  return `<footer class="pie">
+    <div><h3>¿Necesitás ayuda?</h3><p class="muted">Lunes a viernes de 8 a 20 y sábados de 9 a 14. Hipólito Yrigoyen 109, Nogoyá.</p></div>
+    <div><a class="btn wa" href="${waLink('Hola, Centro Kairós. Les escribo desde el portal del paciente.')}" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>
+    <p class="small"><a href="/">Volver al sitio de Centro Kairós</a></p>
+  </footer>`;
+}
+
+/* ===== Eventos ===== */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button, a'); if (!t) return;
+  if (t.id === 'btn-ingresar') return onIngresar();
+  if (t.id === 'btn-salir') return salir();
+  if (t.id === 'btn-enviar') return onEnviar();
+  if (t.id === 'btn-volver') return ir(S.datos ? 'inicio' : 'ingreso');
+  if (t.dataset.pedir) return abrirForm(t.dataset.pedir);
+  if (t.dataset.cancelar) return onCancelar(t.dataset.cancelar);
+});
+document.addEventListener('change', e => {
+  if ($('msg') && S.vista === 'form') $('msg').textContent = '';
+  if (e.target.name === 'equipo') $('otro-box').hidden = e.target.value !== '__otro';
+  if (e.target.name === 'dir' && $('dir-box')) $('dir-box').hidden = e.target.value !== 'otra';
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && S.vista === 'ingreso' && e.target.matches('#dni, #fd, #fa')) onIngresar();
+});
+
+/* ===== Arranque ===== */
+(async function () {
+  const s = leerSesion();
+  if (s && s.dni && s.fnac) {
+    ir('cargando');
+    try { const r = await ingresar(s.dni, s.fnac); if (r.ok) return ir('inicio'); } catch (e) {}
+    guardarSesion(null);
+  }
+  ir('ingreso');
+})();
 </script>
 </body>
 </html>
