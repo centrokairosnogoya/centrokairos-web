@@ -174,6 +174,10 @@ const hoyISO = () => { const d = new Date(); return d.getFullYear() + '-' + Stri
 const fechaCorta = iso => { if (!iso) return ''; const [a, m, d] = String(iso).slice(0, 10).split('-'); return +d + ' de ' + MESES[+m - 1] + (a !== String(new Date().getFullYear()) ? ' de ' + a : ''); };
 const horaCorta = h => { const m = String(h || '').match(/^(\d{1,2}):(\d{2})/); return m ? +m[1] + ':' + m[2] : String(h || ''); };
 const nombrePila = n => { const t = String(n || '').trim(); const p = t.includes(',') ? t.split(',')[1].trim() : t; return p.split(/\s+/)[0] || ''; };
+const soloNum = s => String(s || '').replace(/\D/g, '');
+const dniOk = s => { const n = soloNum(s).length; return n >= 6 && n <= 9; };
+/* El DNI del tercero viaja junto al nombre, así se ve en Pedidos de alquiler sin tocar la base */
+const paraQuien = (nombre, dni) => nombre ? nombre + ' (DNI ' + soloNum(dni) + ')' : '';
 const waLink = txt => 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(txt);
 
 let sb = null;
@@ -444,7 +448,8 @@ function vistaForm() {
 
     ${socio ? `<div class="campo"><label for="f-tel">Otro teléfono (opcional)</label><p class="ayuda">${D.tel_fin ? 'Te escribimos al número terminado en ' + esc(D.tel_fin) + '. Completá esto solo si preferís otro.' : 'No tenemos tu teléfono en la ficha: dejanos uno para confirmarte.'}</p><input id="f-tel" type="tel" autocomplete="tel" maxlength="40"/></div>` : ''}
 
-    <div class="campo"><label for="f-para">¿Es para otra persona? (opcional)</label><p class="ayuda">Si es para un familiar, escribí su nombre.</p><input id="f-para" type="text" maxlength="120"/></div>
+    <div class="campo"><label for="f-para">¿Es para otra persona? (opcional)</label><p class="ayuda">Si es para un familiar, escribí su nombre y apellido.</p><input id="f-para" type="text" autocomplete="off" maxlength="90"/></div>
+    <div class="campo" id="para-dni-box" hidden><label for="f-para-dni">DNI de esa persona</label><p class="ayuda">Solo números, sin puntos.</p><input id="f-para-dni" type="text" inputmode="numeric" autocomplete="off" maxlength="11"/></div>
     <div class="campo"><label for="f-notas">Algo más que debamos saber (opcional)</label><textarea id="f-notas" maxlength="500"></textarea></div>
 
     <div class="aviso mal" id="msg" role="alert"></div>
@@ -465,10 +470,11 @@ async function onEnviar() {
   if (socio && !D.tel_fin && v('f-tel').replace(/\D/g, '').length < 8) return err('Dejanos un teléfono para confirmarte el pedido.', 'f-tel');
   if (!equipo) return err('Elegí qué equipo necesitás.');
   if (!usarFicha && v('f-dir').length < 4) return err('Escribí la dirección donde se va a usar el equipo.', 'f-dir');
+  if (v('f-para') && !dniOk(v('f-para-dni'))) return err('Escribí el DNI de la persona que va a usar el equipo.', 'f-para-dni');
   if ($('f-web') && $('f-web').value) return;
 
   const pedido = { tipo: S.form.tipo, equipo, desde: v('f-desde'), duracion: v('f-dur'), direccion: usarFicha ? '' : v('f-dir'),
-    usar_direccion_ficha: usarFicha, telefono: v('f-tel'), para_quien: v('f-para'), notas: v('f-notas') };
+    usar_direccion_ficha: usarFicha, telefono: v('f-tel'), para_quien: paraQuien(v('f-para'), v('f-para-dni')), notas: v('f-notas') };
   if (!socio) { pedido.nombre = v('f-nombre'); pedido.dni = v('f-dni'); }
 
   msg.textContent = ''; b.disabled = true; b.textContent = 'Enviando…';
@@ -522,8 +528,10 @@ document.addEventListener('click', e => {
   if (t.dataset.pedir) return abrirForm(t.dataset.pedir);
   if (t.dataset.cancelar) return onCancelar(t.dataset.cancelar);
 });
+document.addEventListener('input', e => {
+  if (e.target.id === 'f-para' && $('para-dni-box')) $('para-dni-box').hidden = !e.target.value.trim();
+});
 document.addEventListener('change', e => {
-  if ($('msg') && S.vista === 'form') $('msg').textContent = '';
   if (e.target.name === 'equipo') $('otro-box').hidden = e.target.value !== '__otro';
   if (e.target.name === 'dir' && $('dir-box')) $('dir-box').hidden = e.target.value !== 'otra';
 });

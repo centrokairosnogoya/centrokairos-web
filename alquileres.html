@@ -137,6 +137,10 @@ const $ = id => document.getElementById(id);
 const app = $('app');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const hoyISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const soloNum = s => String(s || '').replace(/\D/g, '');
+const dniOk = s => { const n = soloNum(s).length; return n >= 6 && n <= 9; };
+/* El DNI del tercero viaja junto al nombre, así se ve en Pedidos de alquiler sin tocar la base */
+const paraQuien = (nombre, dni) => nombre ? nombre + ' (DNI ' + soloNum(dni) + ')' : '';
 const waLink = txt => 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(txt);
 
 let sb = null, EQUIPOS = EQUIPOS_BASE, HECHO = null;
@@ -195,10 +199,11 @@ function vistaForm() {
       <div class="campo"><label for="f-dur">¿Por cuánto tiempo?</label><select id="f-dur">${DURACIONES.map(d => `<option>${d}</option>`).join('')}</select></div>
 
       <div class="campo"><label for="f-nombre">Nombre y apellido</label><input id="f-nombre" type="text" autocomplete="name" maxlength="120"/></div>
+      <div class="campo"><label for="f-dni">DNI</label><p class="ayuda">Solo números, sin puntos.</p><input id="f-dni" type="text" inputmode="numeric" autocomplete="off" maxlength="11"/></div>
       <div class="campo"><label for="f-tel">Tu WhatsApp</label><p class="ayuda">Con característica, por ejemplo 3435 123456. Ahí te llega la respuesta.</p><input id="f-tel" type="tel" autocomplete="tel" maxlength="40"/></div>
       <div class="campo"><label for="f-dir">Dirección donde se va a usar</label><input id="f-dir" type="text" autocomplete="street-address" maxlength="200" placeholder="Calle y número"/></div>
-      <div class="campo"><label for="f-para">¿Es para otra persona? (opcional)</label><p class="ayuda">Si es para un familiar, escribí su nombre.</p><input id="f-para" type="text" maxlength="120"/></div>
-      <div class="campo"><label for="f-dni">DNI (opcional)</label><input id="f-dni" type="text" inputmode="numeric" maxlength="11"/></div>
+      <div class="campo"><label for="f-para">¿Es para otra persona? (opcional)</label><p class="ayuda">Si es para un familiar, escribí su nombre y apellido.</p><input id="f-para" type="text" autocomplete="off" maxlength="90"/></div>
+      <div class="campo" id="para-dni-box" hidden><label for="f-para-dni">DNI de esa persona</label><p class="ayuda">Solo números, sin puntos.</p><input id="f-para-dni" type="text" inputmode="numeric" autocomplete="off" maxlength="11"/></div>
       <div class="campo"><label for="f-notas">Algo más que debamos saber (opcional)</label><textarea id="f-notas" maxlength="500"></textarea></div>
       <div class="trampa" aria-hidden="true"><label for="f-web">No completar</label><input id="f-web" type="text" tabindex="-1" autocomplete="off"/></div>
 
@@ -253,12 +258,14 @@ async function enviar() {
 
   if (!equipo) return err(sel ? 'Escribí qué elemento necesitás.' : 'Elegí qué equipo necesitás.', sel ? 'f-otro' : null);
   if (v('f-nombre').length < 3) return err('Escribí tu nombre y apellido.', 'f-nombre');
+  if (!dniOk(v('f-dni'))) return err('Escribí tu DNI completo, solo números.', 'f-dni');
   if (v('f-tel').replace(/\D/g, '').length < 8) return err('Escribí tu WhatsApp con característica.', 'f-tel');
   if (v('f-dir').length < 4) return err('Escribí la dirección donde se va a usar el equipo.', 'f-dir');
+  if (v('f-para') && !dniOk(v('f-para-dni'))) return err('Escribí el DNI de la persona que va a usar el equipo.', 'f-para-dni');
   if ($('f-web').value) return;
 
   const pedido = { tipo: sel.dataset.tipo, equipo, desde: v('f-desde'), duracion: v('f-dur'), direccion: v('f-dir'),
-    telefono: v('f-tel'), para_quien: v('f-para'), notas: v('f-notas'), nombre: v('f-nombre'), dni: v('f-dni') };
+    telefono: v('f-tel'), para_quien: paraQuien(v('f-para'), v('f-para-dni')), notas: v('f-notas'), nombre: v('f-nombre'), dni: soloNum(v('f-dni')) };
 
   msg.textContent = ''; b.disabled = true; b.textContent = 'Enviando…';
   try {
@@ -281,9 +288,11 @@ document.addEventListener('click', e => {
   if (t.id === 'btn-enviar') return enviar();
   if (t.id === 'btn-otro') { mostrarForm(); window.scrollTo(0, 0); }
 });
+document.addEventListener('input', e => {
+  if (e.target.id === 'f-para') $('para-dni-box').hidden = !e.target.value.trim();
+});
 document.addEventListener('change', e => {
   if (e.target.name === 'equipo') { $('otro-box').hidden = e.target.value !== '__otro'; if (e.target.value === '__otro') $('f-otro').focus(); }
-  if ($('msg')) $('msg').textContent = '';
 });
 
 (async function () { await cargarEquipos(); mostrarForm(); })();
