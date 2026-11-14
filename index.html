@@ -203,6 +203,9 @@
     body.admin-on [data-editable]:focus{outline:2px solid var(--sky);outline-offset:3px;border-radius:4px;background:rgba(91,184,212,.05)}
     body.admin-on [data-editable]{ transition:outline .2s }
 
+    .srv-link{display:block;margin-top:16px;font-weight:700;font-size:.92rem;color:var(--blue);text-underline-offset:3px}
+    .srv-link:hover{color:var(--orange)}
+
     /* RESPONSIVE */
     @media(max-width:900px){
       .nav-links{display:none}
@@ -224,6 +227,7 @@
   </a>
   <ul class="nav-links">
     <li><a href="#servicios">Servicios</a></li>
+    <li><a href="/alquileres.html">Alquileres</a></li>
     <li><a href="#galeria">Galería</a></li>
     <li><a href="#contacto">Contacto</a></li>
   </ul>
@@ -249,6 +253,7 @@
     </div>
     <div class="hero-btns">
       <a href="#servicios" class="btn-p">Ver servicios</a>
+      <a href="/alquileres.html" class="btn-o">🦽 Alquiler de equipos</a>
       <a href="/portal.html" class="btn-o" style="border-color:rgba(91,184,212,.6);color:var(--sky)">🔐 Acceso Paciente</a>
     </div>
   </div>
@@ -368,8 +373,8 @@
     <div class="srv-card"><div class="srv-ico ic2">🧠</div><div class="srv-name">Kinesiología Rehabilitación Neurológica</div><p class="srv-desc">Tratamiento especializado para patologías neurológicas, orientado a recuperar funcionalidad y calidad de vida.</p><span class="srv-tag">Alta especialización</span></div>
     <div class="srv-card"><div class="srv-ico ic3">🏋️</div><div class="srv-name">Gimnasio para Adultos</div><p class="srv-desc">Entrenamiento de fuerza, equilibrio y coordinación orientado a tu vida diaria: levantarte con facilidad, caminar con seguridad y mantener tu autonomía. Especialmente pensado para personas mayores de 60 años, con acompañamiento profesional.</p><span class="srv-tag">Ideal para mayores de 60</span></div>
     <div class="srv-card"><div class="srv-ico ic4">💪</div><div class="srv-name">Kinesiología</div><p class="srv-desc">Evaluación y tratamiento kinesiológico integral, abordando lesiones musculoesqueléticas y posturales.</p><span class="srv-tag">Atención general</span></div>
-    <div class="srv-card"><div class="srv-ico ic1">🧲</div><div class="srv-name">Alquiler de Magnetoterapia</div><p class="srv-desc">Equipos de magnetoterapia disponibles para alquiler, ideales para tratamientos en el hogar bajo indicación profesional.</p><span class="srv-tag">Equipamiento</span></div>
-    <div class="srv-card"><div class="srv-ico ic2">🦽</div><div class="srv-name">Alquiler de Elementos Ortopédicos</div><p class="srv-desc">Contamos con una amplia variedad de elementos ortopédicos en alquiler: muletas, sillas de ruedas, andadores, bastones y más.</p><span class="srv-tag">Equipamiento</span></div>
+    <div class="srv-card"><div class="srv-ico ic1">🧲</div><div class="srv-name">Alquiler de Magnetoterapia</div><p class="srv-desc">Equipos de magnetoterapia disponibles para alquiler, ideales para tratamientos en el hogar bajo indicación profesional.</p><span class="srv-tag">Equipamiento</span><a class="srv-link" href="/alquileres.html#magnetoterapia">Pedir alquiler</a></div>
+    <div class="srv-card"><div class="srv-ico ic2">🦽</div><div class="srv-name">Alquiler de Elementos Ortopédicos</div><p class="srv-desc">Contamos con una amplia variedad de elementos ortopédicos en alquiler: muletas, sillas de ruedas, andadores, bastones y más.</p><span class="srv-tag">Equipamiento</span><a class="srv-link" href="/alquileres.html#ortopedia">Pedir alquiler</a></div>
   </div>
 </section>
 

@@ -275,8 +275,8 @@ function vistaIngreso() {
     <h2>¿Todavía no sos paciente?</h2>
     <p class="muted">Igual podés pedir el alquiler de un equipo. Te respondemos por WhatsApp.</p>
     <div class="fila-btn dos" style="margin-top:0">
-      <button class="btn sec" data-pedir="ortopedia">Alquilar elementos ortopédicos</button>
-      <button class="btn sec" data-pedir="magnetoterapia">Alquilar magnetoterapia</button>
+      <a class="btn sec" href="/alquileres.html#ortopedia">Alquilar elementos ortopédicos</a>
+      <a class="btn sec" href="/alquileres.html#magnetoterapia">Alquilar magnetoterapia</a>
     </div>
   </section>
   ${pie()}`;
@@ -493,7 +493,10 @@ function vistaHecho() {
   <h1>Recibimos tu pedido</h1>
   <section class="panel" style="margin-top:24px">
     <p><strong>${esc(h.equipo)}</strong>, pedido N.º ${h.id}.</p>
-    <p style="margin-top:10px">Avisanos por WhatsApp con el botón de abajo: así lo vemos enseguida y te confirmamos disponibilidad y precio.</p>
+    <p style="margin-top:10px">${S.datos
+      ? 'Te confirmamos disponibilidad y precio por WhatsApp, y también vas a ver la respuesta acá, en Tus pedidos.'
+      : 'La respuesta no se ve en esta página: te la mandamos por WhatsApp al número que dejaste, con la disponibilidad y el precio.'}</p>
+    <p style="margin-top:10px">Para que lo veamos enseguida, avisanos con el botón de abajo.</p>
     <div class="fila-btn">
       <a class="btn wa ancho" href="${waLink(txt)}" target="_blank" rel="noopener">Avisar por WhatsApp</a>
       <button class="btn sec ancho" id="btn-volver">${S.datos ? 'Volver a mi portal' : 'Volver al inicio'}</button>

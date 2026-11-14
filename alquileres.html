@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Alquiler de elementos ortopédicos y magnetoterapia en Nogoyá – Centro Kairós</title>
+<meta name="description" content="Alquiler de muletas, andadores, sillas de ruedas, bastones y equipos de magnetoterapia en Nogoyá. Hacé el pedido desde la web y te confirmamos por WhatsApp."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --blue:#2D3A8C; --orange:#F4702A; --orange-d:#C2500F; --sky:#5BB8D4;
+    --bg:#F7F8FC; --surface:#FFFFFF; --ink:#0F1428; --ink-2:#465068; --line:#D9DEEC;
+    --tint:#EEF1FB; --bad:#A3261F; --bad-bg:#FBE9E7; --accent:var(--blue);
+    --r:14px; --r-s:10px;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0D1124; --surface:#171D3A; --ink:#EEF1FA; --ink-2:#B4BCD6; --line:#313A63;
+      --tint:#222A52; --bad:#FF9D94; --bad-bg:#3D1916; --accent:#A9B6FF; --orange-d:#FF9A5E;
+      color-scheme:dark;
+    }
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    font-size:18px;line-height:1.5;padding-bottom:env(safe-area-inset-bottom,0px)}
+  h1,h2{font-family:'Playfair Display',Georgia,'Times New Roman',serif;line-height:1.15;margin:0;letter-spacing:-.01em}
+  h1{font-size:clamp(1.9rem,6.5vw,2.7rem);font-weight:900}
+  h2{font-size:1.4rem;font-weight:700}
+  h3{font-size:1.05rem;margin:0;font-weight:700}
+  h1:focus{outline:none}
+  p{margin:0}
+  a{color:var(--accent)}
+  .muted{color:var(--ink-2)}
+  .small{font-size:.92rem}
+
+  .top{display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 20px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
+  .top .logo{width:46px;height:46px;border-radius:12px;background:#fff;display:grid;place-items:center;flex:none;overflow:hidden}
+  .top .logo img{width:42px;height:42px;object-fit:contain}
+  .top .marca{font-weight:700;line-height:1.2;color:var(--ink);text-decoration:none}
+  .top .marca span{display:block;font-weight:400;font-size:.85rem;color:var(--ink-2)}
+  .top .sp{flex:1}
+  .top .acceso{font-weight:600;font-size:.95rem;padding:10px 4px;text-underline-offset:3px;white-space:nowrap}
+
+  main{max-width:720px;margin:0 auto;padding:28px 20px 56px}
+  .bloque{margin-top:36px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+
+  .pasos{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:12px;counter-reset:paso}
+  .pasos li{counter-increment:paso;display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start}
+  .pasos li::before{content:counter(paso);width:36px;height:36px;border-radius:50%;background:var(--tint);color:var(--accent);font-weight:700;display:grid;place-items:center}
+  .pasos b{display:block}
+  @media (min-width:640px){.pasos{grid-template-columns:repeat(3,1fr);gap:18px}}
+
+  .socio{margin-top:28px;background:var(--tint);border-color:transparent;display:grid;gap:12px}
+  @media (min-width:640px){.socio{grid-template-columns:1fr auto;align-items:center}}
+
+  label,.lbl,legend{display:block;font-weight:600;margin-bottom:6px;padding:0}
+  .ayuda{font-size:.92rem;color:var(--ink-2);margin:-2px 0 8px}
+  fieldset{border:0;margin:0;padding:0;min-width:0}
+  fieldset + fieldset{margin-top:24px}
+  legend{font-family:'Playfair Display',Georgia,serif;font-size:1.2rem;font-weight:700;margin-bottom:2px}
+  input[type=text],input[type=tel],input[type=date],select,textarea{
+    width:100%;min-height:56px;padding:12px 14px;font:inherit;color:var(--ink);background:var(--surface);
+    border:2px solid var(--line);border-radius:var(--r-s);appearance:none;-webkit-appearance:none}
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%),linear-gradient(135deg,var(--ink-2) 50%,transparent 50%);
+    background-position:calc(100% - 22px) 50%,calc(100% - 15px) 50%;background-size:7px 7px;background-repeat:no-repeat;padding-right:40px}
+  textarea{min-height:96px;resize:vertical}
+  input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible,.op input:focus-visible + span{
+    outline:3px solid var(--orange);outline-offset:2px}
+  .campo{margin-top:20px}
+  .ops{display:grid;gap:10px}
+  @media (min-width:560px){.ops.dos{grid-template-columns:1fr 1fr}}
+  .op{display:block;position:relative;margin:0;font-weight:500;cursor:pointer}
+  .op input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .op span{display:flex;align-items:center;gap:12px;min-height:56px;height:100%;padding:12px 14px;border:2px solid var(--line);border-radius:var(--r-s);background:var(--surface)}
+  .op span::before{content:"";flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--ink-2)}
+  .op input:checked + span{border-color:var(--accent);background:var(--tint)}
+  .op input:checked + span::before{border:7px solid var(--accent)}
+  .op small{display:block;color:var(--ink-2);font-weight:400}
+  .trampa{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:12px 26px;border-radius:50px;
+    font:inherit;font-weight:700;text-decoration:none;border:2px solid transparent;cursor:pointer;text-align:center}
+  .btn.pri{background:var(--orange);color:#1b0c02}
+  .btn.pri:hover{background:#ff8442}
+  .btn.sec{background:transparent;color:var(--accent);border-color:var(--accent)}
+  .btn.sec:hover{background:var(--surface)}
+  .btn.wa{background:#0F7A41;color:#fff}
+  .btn.ancho{width:100%}
+  .btn[disabled]{opacity:.6;cursor:default}
+  .fila-btn{display:grid;gap:12px;margin-top:20px}
+
+  .aviso{margin-top:16px;padding:14px 16px;border-radius:var(--r-s);font-weight:500;background:var(--bad-bg);color:var(--bad)}
+  .aviso:empty{display:none}
+  .pie{margin-top:44px;padding-top:24px;border-top:1px solid var(--line);display:grid;gap:14px}
+  [hidden]{display:none !important}
+  @media (prefers-reduced-motion:no-preference){.btn,.op span{transition:background-color .15s,border-color .15s}}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="logo" href="/" aria-label="Ir al inicio de Centro Kairós"><img src="images/img1.png" alt="" onerror="this.parentNode.hidden=true"/></a>
+  <a class="marca" href="/">Centro Kairós<span>Alquiler de equipos</span></a>
+  <div class="sp"></div>
+  <a class="acceso" href="/portal.html">Acceso paciente</a>
+</header>
+
+<main id="app"><p class="muted">Cargando…</p></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* ===== Conexión con Supabase (la misma base que el portal y la app de gestión) =====
+   La clave es la "Publishable key": es pública. Nunca poner acá la Secret key.
+   La lista de equipos sale de la tabla portal_equipos (se edita en la app de gestión: Ajustes, pestaña Alquileres).
+   Los pedidos van a portal_solicitudes y se ven en la app de gestión, en Pedidos de alquiler. */
+const SUPABASE_URL = 'https://zkmdvbztcuptzqmyaczq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UkaEpnVwQeqW7pxhhIJGzQ_2ujdcFdl';
+const WHATSAPP = '543435419605';
+
+const GRUPOS = [
+  ['ortopedia', 'Elementos ortopédicos', 'Muletas, andadores, sillas de ruedas, bastones y más.'],
+  ['magnetoterapia', 'Magnetoterapia', 'Equipos para tratamientos en el hogar, bajo indicación profesional.']
+];
+const DURACIONES = ['1 semana', '2 semanas', '1 mes', 'Más de un mes', 'Todavía no sé'];
+const EQUIPOS_BASE = [
+  { tipo: 'ortopedia', nombre: 'Muletas' }, { tipo: 'ortopedia', nombre: 'Andador' },
+  { tipo: 'ortopedia', nombre: 'Silla de ruedas' }, { tipo: 'ortopedia', nombre: 'Bastón' },
+  { tipo: 'magnetoterapia', nombre: 'Equipo de magnetoterapia' }
+];
+
+const $ = id => document.getElementById(id);
+const app = $('app');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const hoyISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const waLink = txt => 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(txt);
+
+let sb = null, EQUIPOS = EQUIPOS_BASE, HECHO = null;
+function conectar() {
+  if (sb) return sb;
+  if (!window.supabase) throw new Error('sin-libreria');
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+  return sb;
+}
+async function cargarEquipos() {
+  try {
+    const { data, error } = await conectar().from('portal_equipos').select('tipo, nombre, detalle, precio_texto').order('orden');
+    if (!error && data && data.length) EQUIPOS = data;
+  } catch (e) {}
+}
+function textoError(e) {
+  const m = String((e && (e.message || e.code)) || e);
+  if (m === 'sin-libreria' || /Failed to fetch|NetworkError|Load failed/i.test(m)) return 'No hay conexión con el centro en este momento. Revisá tu internet y probá de nuevo, o escribinos por WhatsApp.';
+  return 'El pedido no se pudo enviar. Probá de nuevo en un momento o escribinos por WhatsApp.';
+}
+
+function opcion(e) {
+  const det = [e.detalle, e.precio_texto].filter(Boolean).join(', ');
+  return `<label class="op"><input type="radio" name="equipo" value="${esc(e.nombre)}" data-tipo="${e.tipo}"/><span><b style="font-weight:600">${esc(e.nombre)}${det ? `<small>${esc(det)}</small>` : ''}</b></span></label>`;
+}
+
+function vistaForm() {
+  const grupos = GRUPOS.map(([tipo, titulo, desc]) => {
+    const L = EQUIPOS.filter(e => e.tipo === tipo);
+    if (!L.length && tipo !== 'ortopedia') return '';
+    return `<fieldset id="${tipo}"><legend>${titulo}</legend><p class="ayuda">${desc}</p>
+      <div class="ops dos">${L.map(opcion).join('')}${tipo === 'ortopedia' ? '<label class="op"><input type="radio" name="equipo" value="__otro" data-tipo="ortopedia"/><span>Otro elemento</span></label>' : ''}</div>
+      ${tipo === 'ortopedia' ? '<div id="otro-box" hidden style="margin-top:10px"><label for="f-otro">¿Cuál?</label><input id="f-otro" type="text" maxlength="120"/></div>' : ''}</fieldset>`;
+  }).join('');
+  return `
+  <h1>Alquiler de elementos ortopédicos y magnetoterapia</h1>
+  <p class="muted" style="margin-top:10px">Hacé el pedido desde acá y te respondemos por WhatsApp. No hace falta ser paciente del centro.</p>
+
+  <ol class="pasos">
+    <li><div><b>Elegí el equipo</b><span class="muted small">Y contanos desde cuándo lo necesitás.</span></div></li>
+    <li><div><b>Te confirmamos</b><span class="muted small">Por WhatsApp: si está disponible y cuánto sale.</span></div></li>
+    <li><div><b>Coordinamos la entrega</b><span class="muted small">Por el mismo chat.</span></div></li>
+  </ol>
+
+  <section class="panel socio">
+    <p><b>¿Ya sos paciente del centro?</b> Pedilo desde tu portal: tus datos ya están cargados y tu pedido tiene prioridad.</p>
+    <a class="btn sec" href="/portal.html">Ir a mi portal</a>
+  </section>
+
+  <section class="bloque">
+    <h2>Tu pedido</h2>
+    <div class="panel" style="margin-top:14px">
+      ${grupos}
+
+      <div class="campo"><label for="f-desde">¿Desde qué día?</label><input id="f-desde" type="date" min="${hoyISO()}" value="${hoyISO()}"/></div>
+      <div class="campo"><label for="f-dur">¿Por cuánto tiempo?</label><select id="f-dur">${DURACIONES.map(d => `<option>${d}</option>`).join('')}</select></div>
+
+      <div class="campo"><label for="f-nombre">Nombre y apellido</label><input id="f-nombre" type="text" autocomplete="name" maxlength="120"/></div>
+      <div class="campo"><label for="f-tel">Tu WhatsApp</label><p class="ayuda">Con característica, por ejemplo 3435 123456. Ahí te llega la respuesta.</p><input id="f-tel" type="tel" autocomplete="tel" maxlength="40"/></div>
+      <div class="campo"><label for="f-dir">Dirección donde se va a usar</label><input id="f-dir" type="text" autocomplete="street-address" maxlength="200" placeholder="Calle y número"/></div>
+      <div class="campo"><label for="f-para">¿Es para otra persona? (opcional)</label><p class="ayuda">Si es para un familiar, escribí su nombre.</p><input id="f-para" type="text" maxlength="120"/></div>
+      <div class="campo"><label for="f-dni">DNI (opcional)</label><input id="f-dni" type="text" inputmode="numeric" maxlength="11"/></div>
+      <div class="campo"><label for="f-notas">Algo más que debamos saber (opcional)</label><textarea id="f-notas" maxlength="500"></textarea></div>
+      <div class="trampa" aria-hidden="true"><label for="f-web">No completar</label><input id="f-web" type="text" tabindex="-1" autocomplete="off"/></div>
+
+      <div class="aviso" id="msg" role="alert"></div>
+      <div class="fila-btn"><button class="btn pri ancho" id="btn-enviar">Enviar pedido</button></div>
+    </div>
+  </section>
+  ${pie()}`;
+}
+
+function vistaHecho() {
+  const h = HECHO;
+  const txt = `Hola, soy ${h.nombre}. Acabo de pedir el alquiler de ${h.equipo} desde la web (pedido N.º ${h.id}).`;
+  return `
+  <h1 tabindex="-1">Recibimos tu pedido</h1>
+  <section class="panel" style="margin-top:24px">
+    <p><strong>${esc(h.equipo)}</strong>, pedido N.º ${h.id}.</p>
+    <p style="margin-top:10px">La respuesta no se ve en esta página: te la mandamos por WhatsApp al número que dejaste, con la disponibilidad y el precio.</p>
+    <p style="margin-top:10px">Para que lo veamos enseguida, avisanos con el botón de abajo.</p>
+    <div class="fila-btn">
+      <a class="btn wa ancho" href="${waLink(txt)}" target="_blank" rel="noopener">Avisar por WhatsApp</a>
+      <button class="btn sec ancho" id="btn-otro">Hacer otro pedido</button>
+    </div>
+  </section>
+  ${pie()}`;
+}
+
+function pie() {
+  return `<footer class="pie">
+    <div><h3>¿Preferís consultar antes?</h3><p class="muted">Lunes a viernes de 8 a 20 y sábados de 9 a 14. Hipólito Yrigoyen 109, Nogoyá.</p></div>
+    <div><a class="btn wa" href="${waLink('Hola, Centro Kairós. Quería consultar por el alquiler de equipos.')}" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>
+    <p class="small"><a href="/">Volver al sitio de Centro Kairós</a></p>
+  </footer>`;
+}
+
+function mostrarForm() {
+  app.innerHTML = vistaForm();
+  /* Si se llega con #ortopedia o #magnetoterapia, ir a ese grupo; si tiene un solo equipo, dejarlo elegido */
+  const tipo = location.hash.slice(1), g = tipo && $(tipo);
+  if (g && g.tagName === 'FIELDSET') {
+    const R = g.querySelectorAll('input[name=equipo]');
+    if (R.length === 1) R[0].checked = true;
+    g.scrollIntoView({ block: 'start' });
+  }
+}
+
+async function enviar() {
+  const msg = $('msg'), b = $('btn-enviar'), v = id => ($(id) ? $(id).value.trim() : '');
+  const sel = document.querySelector('input[name=equipo]:checked');
+  const equipo = !sel ? '' : sel.value === '__otro' ? v('f-otro') : sel.value;
+  const err = (t, id) => { msg.textContent = t; if (id && $(id)) $(id).focus(); else msg.scrollIntoView({ block: 'center' }); };
+
+  if (!equipo) return err(sel ? 'Escribí qué elemento necesitás.' : 'Elegí qué equipo necesitás.', sel ? 'f-otro' : null);
+  if (v('f-nombre').length < 3) return err('Escribí tu nombre y apellido.', 'f-nombre');
+  if (v('f-tel').replace(/\D/g, '').length < 8) return err('Escribí tu WhatsApp con característica.', 'f-tel');
+  if (v('f-dir').length < 4) return err('Escribí la dirección donde se va a usar el equipo.', 'f-dir');
+  if ($('f-web').value) return;
+
+  const pedido = { tipo: sel.dataset.tipo, equipo, desde: v('f-desde'), duracion: v('f-dur'), direccion: v('f-dir'),
+    telefono: v('f-tel'), para_quien: v('f-para'), notas: v('f-notas'), nombre: v('f-nombre'), dni: v('f-dni') };
+
+  msg.textContent = ''; b.disabled = true; b.textContent = 'Enviando…';
+  try {
+    const { data, error } = await conectar().rpc('portal_pedir_alquiler_publico', { p_pedido: pedido });
+    if (error) throw error;
+    const r = data || {};
+    if (r.ok) {
+      HECHO = { id: r.id, equipo, nombre: pedido.nombre };
+      app.innerHTML = vistaHecho(); window.scrollTo(0, 0);
+      const h = app.querySelector('h1'); if (h) h.focus({ preventScroll: true });
+      return;
+    }
+    msg.textContent = r.motivo === 'limite' ? 'Ya recibimos varios pedidos desde este teléfono. Escribinos por WhatsApp y lo vemos.' : 'Faltan datos para enviar el pedido. Revisá los campos.';
+  } catch (e) { msg.textContent = textoError(e); }
+  b.disabled = false; b.textContent = 'Enviar pedido';
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.id === 'btn-enviar') return enviar();
+  if (t.id === 'btn-otro') { mostrarForm(); window.scrollTo(0, 0); }
+});
+document.addEventListener('change', e => {
+  if (e.target.name === 'equipo') { $('otro-box').hidden = e.target.value !== '__otro'; if (e.target.value === '__otro') $('f-otro').focus(); }
+  if ($('msg')) $('msg').textContent = '';
+});
+
+(async function () { await cargarEquipos(); mostrarForm(); })();
+</script>
+</body>
+</html>
