@@ -159,6 +159,16 @@ const ESTADO = {
   pendiente: ['Pendiente de confirmación', 'warn'], confirmado: ['Confirmado', 'ok'], entregado: ['Lo tenés vos', 'ok'],
   devuelto: ['Devuelto', 'neutro'], cancelado: ['Cancelado', 'neutro'], rechazado: ['No disponible', 'bad']
 };
+/* Magnetoterapia: según la zona del cuerpo, el centro elige el tipo de equipo. La lista se puede editar acá. */
+const ZONAS = ['Rodilla', 'Cadera', 'Hombro', 'Columna lumbar', 'Columna cervical', 'Tobillo o pie', 'Mano o muñeca', 'Codo'];
+const camposMagneto = () => `
+      <div class="campo"><label for="f-zona">¿Qué zona del cuerpo se va a tratar?</label><p class="ayuda">Según la zona elegimos el tipo de equipo.</p>
+        <select id="f-zona"><option value="">Elegí</option>${ZONAS.map(z => `<option>${z}</option>`).join('')}<option value="__otra">Otra zona</option></select></div>
+      <div class="campo" id="zona-otra-box" hidden><label for="f-zona-otra">¿Cuál?</label><input id="f-zona-otra" type="text" maxlength="40"/></div>
+      <div class="campo"><label for="f-diag">Diagnóstico (opcional)</label><p class="ayuda">Si tenés la indicación del médico, escribí qué dice.</p><input id="f-diag" type="text" autocomplete="off" maxlength="100"/></div>`;
+/* Zona y diagnóstico viajan al principio del comentario, así se ven en Pedidos de alquiler sin tocar la base */
+const zonaElegida = () => { const z = $('f-zona') ? $('f-zona').value : ''; return z === '__otra' ? $('f-zona-otra').value.trim() : z; };
+const notasMagneto = notas => { const d = $('f-diag').value.trim(); return ('Zona a tratar: ' + zonaElegida() + '. ' + (d ? 'Diagnóstico: ' + d.replace(/\.+$/, '') + '. ' : '') + notas).trim(); };
 const DURACIONES = ['1 semana', '2 semanas', '1 mes', 'Más de un mes', 'Todavía no sé'];
 const EQUIPOS_BASE = [
   { tipo: 'ortopedia', nombre: 'Muletas' }, { tipo: 'ortopedia', nombre: 'Andador' },
@@ -432,6 +442,7 @@ function vistaForm() {
       <div id="otro-box" hidden style="margin-top:10px"><label for="f-otro">¿Cuál?</label><input id="f-otro" type="text" maxlength="120"/></div>
     </div>
 
+    ${tipo === 'magnetoterapia' ? camposMagneto() : ''}
     <div class="campo"><label for="f-desde">¿Desde qué día?</label><input id="f-desde" type="date" min="${hoyISO()}" value="${hoyISO()}"/></div>
     <div class="campo"><label for="f-dur">¿Por cuánto tiempo?</label><select id="f-dur">${DURACIONES.map(d => `<option>${d}</option>`).join('')}</select></div>
 
@@ -450,7 +461,7 @@ function vistaForm() {
 
     <div class="campo"><label for="f-para">¿Es para otra persona? (opcional)</label><p class="ayuda">Si es para un familiar, escribí su nombre y apellido.</p><input id="f-para" type="text" autocomplete="off" maxlength="90"/></div>
     <div class="campo" id="para-dni-box" hidden><label for="f-para-dni">DNI de esa persona</label><p class="ayuda">Solo números, sin puntos.</p><input id="f-para-dni" type="text" inputmode="numeric" autocomplete="off" maxlength="11"/></div>
-    <div class="campo"><label for="f-notas">Algo más que debamos saber (opcional)</label><textarea id="f-notas" maxlength="500"></textarea></div>
+    <div class="campo"><label for="f-notas">Algo más que debamos saber (opcional)</label><textarea id="f-notas" maxlength="340"></textarea></div>
 
     <div class="aviso mal" id="msg" role="alert"></div>
     <div class="fila-btn"><button class="btn pri ancho" id="btn-enviar">Enviar pedido</button></div>
@@ -469,12 +480,15 @@ async function onEnviar() {
   if (!socio && v('f-tel').replace(/\D/g, '').length < 8) return err('Escribí tu WhatsApp con característica.', 'f-tel');
   if (socio && !D.tel_fin && v('f-tel').replace(/\D/g, '').length < 8) return err('Dejanos un teléfono para confirmarte el pedido.', 'f-tel');
   if (!equipo) return err('Elegí qué equipo necesitás.');
+  const esMagneto = S.form.tipo === 'magnetoterapia';
+  if (esMagneto && !$('f-zona').value) return err('Elegí la zona del cuerpo que se va a tratar.', 'f-zona');
+  if (esMagneto && !zonaElegida()) return err('Escribí qué zona se va a tratar.', 'f-zona-otra');
   if (!usarFicha && v('f-dir').length < 4) return err('Escribí la dirección donde se va a usar el equipo.', 'f-dir');
   if (v('f-para') && !dniOk(v('f-para-dni'))) return err('Escribí el DNI de la persona que va a usar el equipo.', 'f-para-dni');
   if ($('f-web') && $('f-web').value) return;
 
   const pedido = { tipo: S.form.tipo, equipo, desde: v('f-desde'), duracion: v('f-dur'), direccion: usarFicha ? '' : v('f-dir'),
-    usar_direccion_ficha: usarFicha, telefono: v('f-tel'), para_quien: paraQuien(v('f-para'), v('f-para-dni')), notas: v('f-notas') };
+    usar_direccion_ficha: usarFicha, telefono: v('f-tel'), para_quien: paraQuien(v('f-para'), v('f-para-dni')), notas: esMagneto ? notasMagneto(v('f-notas')) : v('f-notas') };
   if (!socio) { pedido.nombre = v('f-nombre'); pedido.dni = v('f-dni'); }
 
   msg.textContent = ''; b.disabled = true; b.textContent = 'Enviando…';
@@ -533,6 +547,7 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   if (e.target.name === 'equipo') $('otro-box').hidden = e.target.value !== '__otro';
+  if (e.target.id === 'f-zona') { $('zona-otra-box').hidden = e.target.value !== '__otra'; if (e.target.value === '__otra') $('f-zona-otra').focus(); }
   if (e.target.name === 'dir' && $('dir-box')) $('dir-box').hidden = e.target.value !== 'otra';
 });
 document.addEventListener('keydown', e => {

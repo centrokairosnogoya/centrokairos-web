@@ -126,6 +126,16 @@ const GRUPOS = [
   ['ortopedia', 'Elementos ortopédicos', 'Muletas, andadores, sillas de ruedas, bastones y más.'],
   ['magnetoterapia', 'Magnetoterapia', 'Equipos para tratamientos en el hogar, bajo indicación profesional.']
 ];
+/* Magnetoterapia: según la zona del cuerpo, el centro elige el tipo de equipo. La lista se puede editar acá. */
+const ZONAS = ['Rodilla', 'Cadera', 'Hombro', 'Columna lumbar', 'Columna cervical', 'Tobillo o pie', 'Mano o muñeca', 'Codo'];
+const camposMagneto = () => `
+      <div class="campo"><label for="f-zona">¿Qué zona del cuerpo se va a tratar?</label><p class="ayuda">Según la zona elegimos el tipo de equipo.</p>
+        <select id="f-zona"><option value="">Elegí</option>${ZONAS.map(z => `<option>${z}</option>`).join('')}<option value="__otra">Otra zona</option></select></div>
+      <div class="campo" id="zona-otra-box" hidden><label for="f-zona-otra">¿Cuál?</label><input id="f-zona-otra" type="text" maxlength="40"/></div>
+      <div class="campo"><label for="f-diag">Diagnóstico (opcional)</label><p class="ayuda">Si tenés la indicación del médico, escribí qué dice.</p><input id="f-diag" type="text" autocomplete="off" maxlength="100"/></div>`;
+/* Zona y diagnóstico viajan al principio del comentario, así se ven en Pedidos de alquiler sin tocar la base */
+const zonaElegida = () => { const z = $('f-zona') ? $('f-zona').value : ''; return z === '__otra' ? $('f-zona-otra').value.trim() : z; };
+const notasMagneto = notas => { const d = $('f-diag').value.trim(); return ('Zona a tratar: ' + zonaElegida() + '. ' + (d ? 'Diagnóstico: ' + d.replace(/\.+$/, '') + '. ' : '') + notas).trim(); };
 const DURACIONES = ['1 semana', '2 semanas', '1 mes', 'Más de un mes', 'Todavía no sé'];
 const EQUIPOS_BASE = [
   { tipo: 'ortopedia', nombre: 'Muletas' }, { tipo: 'ortopedia', nombre: 'Andador' },
@@ -194,6 +204,7 @@ function vistaForm() {
     <h2>Tu pedido</h2>
     <div class="panel" style="margin-top:14px">
       ${grupos}
+      <div id="magneto-box" hidden>${camposMagneto()}</div>
 
       <div class="campo"><label for="f-desde">¿Desde qué día?</label><input id="f-desde" type="date" min="${hoyISO()}" value="${hoyISO()}"/></div>
       <div class="campo"><label for="f-dur">¿Por cuánto tiempo?</label><select id="f-dur">${DURACIONES.map(d => `<option>${d}</option>`).join('')}</select></div>
@@ -204,7 +215,7 @@ function vistaForm() {
       <div class="campo"><label for="f-dir">Dirección donde se va a usar</label><input id="f-dir" type="text" autocomplete="street-address" maxlength="200" placeholder="Calle y número"/></div>
       <div class="campo"><label for="f-para">¿Es para otra persona? (opcional)</label><p class="ayuda">Si es para un familiar, escribí su nombre y apellido.</p><input id="f-para" type="text" autocomplete="off" maxlength="90"/></div>
       <div class="campo" id="para-dni-box" hidden><label for="f-para-dni">DNI de esa persona</label><p class="ayuda">Solo números, sin puntos.</p><input id="f-para-dni" type="text" inputmode="numeric" autocomplete="off" maxlength="11"/></div>
-      <div class="campo"><label for="f-notas">Algo más que debamos saber (opcional)</label><textarea id="f-notas" maxlength="500"></textarea></div>
+      <div class="campo"><label for="f-notas">Algo más que debamos saber (opcional)</label><textarea id="f-notas" maxlength="340"></textarea></div>
       <div class="trampa" aria-hidden="true"><label for="f-web">No completar</label><input id="f-web" type="text" tabindex="-1" autocomplete="off"/></div>
 
       <div class="aviso" id="msg" role="alert"></div>
@@ -245,7 +256,7 @@ function mostrarForm() {
   const tipo = location.hash.slice(1), g = tipo && $(tipo);
   if (g && g.tagName === 'FIELDSET') {
     const R = g.querySelectorAll('input[name=equipo]');
-    if (R.length === 1) R[0].checked = true;
+    if (R.length === 1) { R[0].checked = true; $('magneto-box').hidden = tipo !== 'magnetoterapia'; }
     g.scrollIntoView({ block: 'start' });
   }
 }
@@ -257,6 +268,9 @@ async function enviar() {
   const err = (t, id) => { msg.textContent = t; if (id && $(id)) $(id).focus(); else msg.scrollIntoView({ block: 'center' }); };
 
   if (!equipo) return err(sel ? 'Escribí qué elemento necesitás.' : 'Elegí qué equipo necesitás.', sel ? 'f-otro' : null);
+  const esMagneto = sel.dataset.tipo === 'magnetoterapia';
+  if (esMagneto && !$('f-zona').value) return err('Elegí la zona del cuerpo que se va a tratar.', 'f-zona');
+  if (esMagneto && !zonaElegida()) return err('Escribí qué zona se va a tratar.', 'f-zona-otra');
   if (v('f-nombre').length < 3) return err('Escribí tu nombre y apellido.', 'f-nombre');
   if (!dniOk(v('f-dni'))) return err('Escribí tu DNI completo, solo números.', 'f-dni');
   if (v('f-tel').replace(/\D/g, '').length < 8) return err('Escribí tu WhatsApp con característica.', 'f-tel');
@@ -265,7 +279,7 @@ async function enviar() {
   if ($('f-web').value) return;
 
   const pedido = { tipo: sel.dataset.tipo, equipo, desde: v('f-desde'), duracion: v('f-dur'), direccion: v('f-dir'),
-    telefono: v('f-tel'), para_quien: paraQuien(v('f-para'), v('f-para-dni')), notas: v('f-notas'), nombre: v('f-nombre'), dni: soloNum(v('f-dni')) };
+    telefono: v('f-tel'), para_quien: paraQuien(v('f-para'), v('f-para-dni')), notas: esMagneto ? notasMagneto(v('f-notas')) : v('f-notas'), nombre: v('f-nombre'), dni: soloNum(v('f-dni')) };
 
   msg.textContent = ''; b.disabled = true; b.textContent = 'Enviando…';
   try {
@@ -292,7 +306,8 @@ document.addEventListener('input', e => {
   if (e.target.id === 'f-para') $('para-dni-box').hidden = !e.target.value.trim();
 });
 document.addEventListener('change', e => {
-  if (e.target.name === 'equipo') { $('otro-box').hidden = e.target.value !== '__otro'; if (e.target.value === '__otro') $('f-otro').focus(); }
+  if (e.target.name === 'equipo') { $('otro-box').hidden = e.target.value !== '__otro'; $('magneto-box').hidden = e.target.dataset.tipo !== 'magnetoterapia'; if (e.target.value === '__otro') $('f-otro').focus(); }
+  if (e.target.id === 'f-zona') { $('zona-otra-box').hidden = e.target.value !== '__otra'; if (e.target.value === '__otra') $('f-zona-otra').focus(); }
 });
 
 (async function () { await cargarEquipos(); mostrarForm(); })();
