@@ -147,6 +147,9 @@
 const SUPABASE_URL = 'https://zkmdvbztcuptzqmyaczq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_UkaEpnVwQeqW7pxhhIJGzQ_2ujdcFdl';
 const WHATSAPP = '543435419605';
+/* Primer mes que se cobra en el sistema nuevo. Las cuotas de meses anteriores no se muestran,
+   porque sus pagos no están cargados acá y figurarían como deuda. Formato: 'AAAA-MM-01'. */
+const CUOTAS_DESDE = '2026-12-01';
 
 const SERV = { gimnasio: 'Gimnasio para Adultos', pilates: 'Pilates Terapéutico' };
 const TIPO = { ortopedia: 'elementos ortopédicos', magnetoterapia: 'magnetoterapia' };
@@ -330,7 +333,7 @@ function seccionCuotas(D) {
   const L = [];
   (D.deudas || []).forEach(d => L.push({ per: d.periodo, act: d.actividad, imp: +d.importe || 0, pag: +d.pagado || 0 }));
   (D.servicios || []).forEach(s => { if (s.cuota) L.push({ per: s.cuota.periodo, act: s.actividad, imp: +s.cuota.importe || 0, pag: +s.cuota.pagado || 0 }); });
-  const ver = L.filter(x => x.imp > 0 || x.pag > 0).sort((x, y) => x.per.localeCompare(y.per) || x.act.localeCompare(y.act));
+  const ver = L.filter(x => x.per >= CUOTAS_DESDE && (x.imp > 0 || x.pag > 0)).sort((x, y) => x.per.localeCompare(y.per) || x.act.localeCompare(y.act));
   if (!ver.length) return '';
   const falta = x => Math.max(0, x.imp - x.pag), deben = ver.filter(x => falta(x) > 0), total = deben.reduce((n, x) => n + falta(x), 0);
   const fila = x => {
