@@ -136,7 +136,8 @@ const camposMagneto = () => `
 /* Zona y diagnóstico viajan al principio del comentario, así se ven en Pedidos de alquiler sin tocar la base */
 const zonaElegida = () => { const z = $('f-zona') ? $('f-zona').value : ''; return z === '__otra' ? $('f-zona-otra').value.trim() : z; };
 const notasMagneto = notas => { const d = $('f-diag').value.trim(); return ('Zona a tratar: ' + zonaElegida() + '. ' + (d ? 'Diagnóstico: ' + d.replace(/\.+$/, '') + '. ' : '') + notas).trim(); };
-const DURACIONES = ['1 semana', '2 semanas', '1 mes', 'Más de un mes', 'Todavía no sé'];
+/* Plazos de alquiler: [lo que se guarda en el pedido, nombre, aclaración] */
+const DURACIONES = [['15 días', 'Quincenal', '15 días'], ['1 mes', 'Mensual', '1 mes']];
 const EQUIPOS_BASE = [
   { tipo: 'ortopedia', nombre: 'Muletas' }, { tipo: 'ortopedia', nombre: 'Andador' },
   { tipo: 'ortopedia', nombre: 'Silla de ruedas' }, { tipo: 'ortopedia', nombre: 'Bastón' },
@@ -207,7 +208,8 @@ function vistaForm() {
       <div id="magneto-box" hidden>${camposMagneto()}</div>
 
       <div class="campo"><label for="f-desde">¿Desde qué día?</label><input id="f-desde" type="date" min="${hoyISO()}" value="${hoyISO()}"/></div>
-      <div class="campo"><label for="f-dur">¿Por cuánto tiempo?</label><select id="f-dur">${DURACIONES.map(d => `<option>${d}</option>`).join('')}</select></div>
+      <div class="campo"><span class="lbl" id="l-dur">¿Por cuánto tiempo?</span>
+      <div class="ops dos" role="radiogroup" aria-labelledby="l-dur">${DURACIONES.map(([v, t, d]) => `<label class="op"><input type="radio" name="dur" value="${v}"/><span><b style="font-weight:600">${t}<small>${d}</small></b></span></label>`).join('')}</div></div>
 
       <div class="campo"><label for="f-nombre">Nombre y apellido</label><input id="f-nombre" type="text" autocomplete="name" maxlength="120"/></div>
       <div class="campo"><label for="f-dni">DNI</label><p class="ayuda">Solo números, sin puntos.</p><input id="f-dni" type="text" inputmode="numeric" autocomplete="off" maxlength="11"/></div>
@@ -271,6 +273,8 @@ async function enviar() {
   const esMagneto = sel.dataset.tipo === 'magnetoterapia';
   if (esMagneto && !$('f-zona').value) return err('Elegí la zona del cuerpo que se va a tratar.', 'f-zona');
   if (esMagneto && !zonaElegida()) return err('Escribí qué zona se va a tratar.', 'f-zona-otra');
+  const dur = document.querySelector('input[name=dur]:checked');
+  if (!dur) return err('Elegí por cuánto tiempo lo necesitás: quincenal o mensual.');
   if (v('f-nombre').length < 3) return err('Escribí tu nombre y apellido.', 'f-nombre');
   if (!dniOk(v('f-dni'))) return err('Escribí tu DNI completo, solo números.', 'f-dni');
   if (v('f-tel').replace(/\D/g, '').length < 8) return err('Escribí tu WhatsApp con característica.', 'f-tel');
@@ -278,7 +282,7 @@ async function enviar() {
   if (v('f-para') && !dniOk(v('f-para-dni'))) return err('Escribí el DNI de la persona que va a usar el equipo.', 'f-para-dni');
   if ($('f-web').value) return;
 
-  const pedido = { tipo: sel.dataset.tipo, equipo, desde: v('f-desde'), duracion: v('f-dur'), direccion: v('f-dir'),
+  const pedido = { tipo: sel.dataset.tipo, equipo, desde: v('f-desde'), duracion: dur.value, direccion: v('f-dir'),
     telefono: v('f-tel'), para_quien: paraQuien(v('f-para'), v('f-para-dni')), notas: esMagneto ? notasMagneto(v('f-notas')) : v('f-notas'), nombre: v('f-nombre'), dni: soloNum(v('f-dni')) };
 
   msg.textContent = ''; b.disabled = true; b.textContent = 'Enviando…';
