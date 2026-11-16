@@ -206,6 +206,30 @@
     .srv-link{display:block;margin-top:16px;font-weight:700;font-size:.92rem;color:var(--blue);text-underline-offset:3px}
     .srv-link:hover{color:var(--orange)}
 
+    /* ANTES DE VENIR */
+    #antes-de-venir{background:white}
+    .adv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+    .adv-card{background:var(--off);border:1.5px solid #e2e8f0;border-radius:20px;padding:34px 30px;display:flex;flex-direction:column}
+    .adv-ico{font-size:34px;margin-bottom:14px}
+    .adv-card h3,.fam h3{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--blue);line-height:1.2;margin-bottom:12px}
+    .adv-card p{font-size:1.08rem;color:#334155;line-height:1.65}
+    .adv-dest{grid-column:span 3;background:linear-gradient(140deg,var(--blue-d),var(--blue));border:none;padding:44px 40px}
+    .adv-ancha{grid-column:span 2}
+    .adv-dest h3{color:white;font-size:clamp(1.7rem,3vw,2.2rem)}
+    .adv-dest p{color:rgba(255,255,255,.88);font-size:1.18rem;max-width:720px}
+    .adv-btn{display:inline-block;align-self:flex-start;margin-top:24px;background:var(--orange);color:white;padding:16px 34px;border-radius:50px;font-weight:700;font-size:1.08rem;text-decoration:none;box-shadow:0 6px 22px rgba(244,112,42,.35);transition:all .2s}
+    .adv-btn:hover{background:#d95e1e;transform:translateY(-2px)}
+    .adv-btn-o{background:white;color:var(--blue);border:2px solid var(--blue);box-shadow:none}
+    .adv-btn-o:hover{background:var(--blue);color:white}
+    .adv-link{margin-top:auto;padding-top:18px;font-weight:700;font-size:1.05rem;color:var(--orange);text-underline-offset:4px}
+    .fam{margin-top:28px;background:var(--sky-l);border-radius:20px;padding:44px 40px;display:flex;align-items:center;justify-content:space-between;gap:36px;flex-wrap:wrap}
+    .fam > div:first-child{flex:1 1 420px}
+    .fam-tag{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+    .fam h3{font-size:clamp(1.6rem,3vw,2.1rem)}
+    .fam p{font-size:1.12rem;color:#1e293b;line-height:1.65;max-width:640px}
+    .fam-btns{display:flex;flex-direction:column;gap:12px}
+    .fam-btns .adv-btn{margin-top:0;text-align:center;align-self:stretch}
+
     /* RESPONSIVE */
     @media(max-width:900px){
       .nav-links{display:none}
@@ -215,6 +239,12 @@
       .reg-card{padding:32px 22px}
       .frow{grid-template-columns:1fr}
       #adminBar{flex-direction:column;gap:12px;padding:18px}
+      .adv-grid{grid-template-columns:1fr}
+      .adv-dest,.adv-ancha{grid-column:auto}
+      .adv-dest{padding:34px 26px}
+      .adv-card{padding:28px 24px}
+      .fam{padding:32px 24px}
+      .adv-btn{align-self:stretch;text-align:center}
     }
   </style>
 </head>
@@ -255,6 +285,75 @@
       <a href="#servicios" class="btn-p">Ver servicios</a>
       <a href="/alquileres.html" class="btn-o">🦽 Alquiler de equipos</a>
       <a href="/portal.html" class="btn-o" style="border-color:rgba(91,184,212,.6);color:var(--sky)">🔐 Acceso Paciente</a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section id="servicios">
+  <div class="stag">Nuestro enfoque</div>
+  <h2 class="stitle">Servicios que ofrecemos</h2>
+  <p class="slead">Trabajamos con un abordaje integral del movimiento, combinando disciplinas terapéuticas para lograr los mejores resultados.</p>
+  <div class="srv-grid">
+    <div class="srv-card"><div class="srv-ico ic1">🤸</div><div class="srv-name">Pilates Terapéutico</div><p class="srv-desc">Nuestras clases se dictan en equipos Reformer e integran los principios del Pilates con la kinesiología, con un plan diseñado para cada paciente.</p><span class="srv-tag">Especialidad central</span></div>
+    <div class="srv-card"><div class="srv-ico ic2">🧠</div><div class="srv-name">Kinesiología Rehabilitación Neurológica</div><p class="srv-desc">Tratamiento especializado para patologías neurológicas, orientado a recuperar funcionalidad y calidad de vida.</p><span class="srv-tag">Alta especialización</span></div>
+    <div class="srv-card"><div class="srv-ico ic3">🏋️</div><div class="srv-name">Gimnasio para Adultos</div><p class="srv-desc">Entrenamiento de fuerza, equilibrio y coordinación orientado a tu vida diaria: levantarte con facilidad, caminar con seguridad y mantener tu autonomía. Especialmente pensado para personas mayores de 60 años, con acompañamiento profesional.</p><span class="srv-tag">Ideal para mayores de 60</span></div>
+    <div class="srv-card"><div class="srv-ico ic4">💪</div><div class="srv-name">Kinesiología</div><p class="srv-desc">Evaluación y tratamiento kinesiológico integral, abordando lesiones musculoesqueléticas y posturales.</p><span class="srv-tag">Atención general</span></div>
+    <div class="srv-card"><div class="srv-ico ic1">🧲</div><div class="srv-name">Alquiler de Magnetoterapia</div><p class="srv-desc">Equipos de magnetoterapia disponibles para alquiler, ideales para tratamientos en el hogar bajo indicación profesional.</p><span class="srv-tag">Equipamiento</span><a class="srv-link" href="/alquileres.html#magnetoterapia">Pedir alquiler</a></div>
+    <div class="srv-card"><div class="srv-ico ic2">🦽</div><div class="srv-name">Alquiler de Elementos Ortopédicos</div><p class="srv-desc">Contamos con una amplia variedad de elementos ortopédicos en alquiler: muletas, sillas de ruedas, andadores, bastones y más.</p><span class="srv-tag">Equipamiento</span><a class="srv-link" href="/alquileres.html#ortopedia">Pedir alquiler</a></div>
+  </div>
+</section>
+
+
+<!-- ANTES DE VENIR -->
+<section id="antes-de-venir">
+  <div class="stag">Antes de venir</div>
+  <h2 class="stitle">Lo que conviene saber</h2>
+  <p class="slead">Sin letra chica. Esto es lo que nos preguntan siempre antes de empezar.</p>
+  <div class="adv-grid">
+    <div class="adv-card adv-dest">
+      <div class="adv-ico">📋</div>
+      <h3>La evaluación inicial</h3>
+      <p>Es sin cargo y dura entre 20 y 30 minutos. Charlamos un rato y probamos algunos movimientos para saber desde dónde arrancás. No hace falta estar en forma para venir.</p>
+      <a class="adv-btn" href="https://wa.me/543435419605?text=Hola%20Centro%20Kair%C3%B3s%2C%20quiero%20pedir%20mi%20evaluaci%C3%B3n%20inicial%20sin%20cargo." target="_blank" rel="noopener">Pedir mi evaluación</a>
+    </div>
+    <div class="adv-card">
+      <div class="adv-ico">🤝</div>
+      <h3>Quién te recibe</h3>
+      <p>Un equipo de profesionales de la salud. Te conocemos por tu nombre y sabemos cómo venís.</p>
+    </div>
+    <div class="adv-card">
+      <div class="adv-ico">🔓</div>
+      <h3>Sin matrícula ni permanencia</h3>
+      <p>No pagás nada extra por inscribirte ni quedás atado a un plazo. Venís porque te hace bien.</p>
+    </div>
+    <div class="adv-card">
+      <div class="adv-ico">📅</div>
+      <h3>Cuándo se paga</h3>
+      <p>Te recomendamos pagar del 1 al 15 de cada mes, en efectivo o por transferencia.</p>
+    </div>
+    <div class="adv-card">
+      <div class="adv-ico">🌗</div>
+      <h3>Si empezás después del 15</h3>
+      <p>Ese primer mes pagás solo la mitad de la cuota.</p>
+    </div>
+    <div class="adv-card adv-ancha">
+      <div class="adv-ico">📱</div>
+      <h3>Tu portal</h3>
+      <p>Desde el celular ves tus horarios y tu cuota. Y si querés, podés compartirle tus datos de ingreso a un hijo o familiar para que te acompañe.</p>
+      <a class="adv-link" href="/portal.html">Entrar al portal</a>
+    </div>
+  </div>
+
+  <div class="fam" id="familias">
+    <div>
+      <div class="fam-tag">Para familias</div>
+      <h3>¿Tu mamá o tu papá vienen a Kairós?</h3>
+      <p>Pediles su DNI y fecha de nacimiento para entrar al portal y acompañalos desde donde estés: vas a ver sus horarios y cómo va la cuota. Y si todavía no vienen, escribinos y te contamos cómo empezar.</p>
+    </div>
+    <div class="fam-btns">
+      <a class="adv-btn" href="/portal.html">Entrar al portal</a>
+      <a class="adv-btn adv-btn-o" href="https://wa.me/543435419605?text=Hola%20Centro%20Kair%C3%B3s%2C%20quiero%20consultar%20para%20que%20mi%20mam%C3%A1%20o%20mi%20pap%C3%A1%20empiecen%20en%20el%20centro." target="_blank" rel="noopener">Consultar por WhatsApp</a>
     </div>
   </div>
 </section>
@@ -362,22 +461,6 @@
 
   </div>
 </section>
-
-<!-- SERVICIOS -->
-<section id="servicios">
-  <div class="stag">Nuestro enfoque</div>
-  <h2 class="stitle">Servicios que ofrecemos</h2>
-  <p class="slead">Trabajamos con un abordaje integral del movimiento, combinando disciplinas terapéuticas para lograr los mejores resultados.</p>
-  <div class="srv-grid">
-    <div class="srv-card"><div class="srv-ico ic1">🤸</div><div class="srv-name">Pilates Terapéutico</div><p class="srv-desc">Nuestras clases se dictan en equipos Reformer e integran los principios del Pilates con la kinesiología, con un plan diseñado para cada paciente.</p><span class="srv-tag">Especialidad central</span></div>
-    <div class="srv-card"><div class="srv-ico ic2">🧠</div><div class="srv-name">Kinesiología Rehabilitación Neurológica</div><p class="srv-desc">Tratamiento especializado para patologías neurológicas, orientado a recuperar funcionalidad y calidad de vida.</p><span class="srv-tag">Alta especialización</span></div>
-    <div class="srv-card"><div class="srv-ico ic3">🏋️</div><div class="srv-name">Gimnasio para Adultos</div><p class="srv-desc">Entrenamiento de fuerza, equilibrio y coordinación orientado a tu vida diaria: levantarte con facilidad, caminar con seguridad y mantener tu autonomía. Especialmente pensado para personas mayores de 60 años, con acompañamiento profesional.</p><span class="srv-tag">Ideal para mayores de 60</span></div>
-    <div class="srv-card"><div class="srv-ico ic4">💪</div><div class="srv-name">Kinesiología</div><p class="srv-desc">Evaluación y tratamiento kinesiológico integral, abordando lesiones musculoesqueléticas y posturales.</p><span class="srv-tag">Atención general</span></div>
-    <div class="srv-card"><div class="srv-ico ic1">🧲</div><div class="srv-name">Alquiler de Magnetoterapia</div><p class="srv-desc">Equipos de magnetoterapia disponibles para alquiler, ideales para tratamientos en el hogar bajo indicación profesional.</p><span class="srv-tag">Equipamiento</span><a class="srv-link" href="/alquileres.html#magnetoterapia">Pedir alquiler</a></div>
-    <div class="srv-card"><div class="srv-ico ic2">🦽</div><div class="srv-name">Alquiler de Elementos Ortopédicos</div><p class="srv-desc">Contamos con una amplia variedad de elementos ortopédicos en alquiler: muletas, sillas de ruedas, andadores, bastones y más.</p><span class="srv-tag">Equipamiento</span><a class="srv-link" href="/alquileres.html#ortopedia">Pedir alquiler</a></div>
-  </div>
-</section>
-
 
 <!-- OBRAS SOCIALES -->
 <section id="obras" style="background:var(--off);padding:80px 5%">
