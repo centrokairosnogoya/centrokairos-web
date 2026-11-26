@@ -1,0 +1,24 @@
+{
+  "id": "/portal.html",
+  "name": "Centro Kairós",
+  "short_name": "Kairós",
+  "description": "Tus horarios, tu cuota y el alquiler de equipos de Centro Kairós, en tu celular.",
+  "lang": "es-AR",
+  "dir": "ltr",
+  "start_url": "/portal.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "categories": ["health", "fitness", "medical"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Mi portal", "short_name": "Mi portal", "description": "Tus horarios y tu cuota", "url": "/portal.html", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Alquilar equipos", "short_name": "Alquileres", "description": "Elementos ortopédicos y magnetoterapia", "url": "/alquileres.html", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Sitio de Centro Kairós", "short_name": "El centro", "url": "/", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

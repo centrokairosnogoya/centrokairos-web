@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="robots" content="noindex"/>
 <title>Portal del paciente – Centro Kairós</title>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#171D3A" media="(prefers-color-scheme: dark)"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Kairós"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<script src="/app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -126,6 +137,21 @@
 
   .volver{display:inline-block;margin-bottom:18px}
   .pie{margin-top:44px;padding-top:24px;border-top:1px solid var(--line);display:grid;gap:14px}
+
+  /* Recordarme en este celular */
+  .check{display:flex;gap:12px;align-items:flex-start;margin-top:20px;font-weight:600;cursor:pointer}
+  .check input{flex:none;width:26px;height:26px;margin:2px 0 0;accent-color:var(--accent);cursor:pointer}
+  .check small{display:block;font-weight:400;color:var(--ink-2);font-size:.92rem;margin-top:2px}
+
+  /* Tener Kairós como app */
+  .app-oferta{margin-top:24px;border-color:transparent;background:var(--tint)}
+  .app-fila{display:flex;gap:14px;align-items:center}
+  .app-fila img{width:60px;height:60px;border-radius:14px;background:#fff;flex:none;box-shadow:0 1px 4px rgba(15,20,40,.18)}
+  .app-oferta .btn{margin-top:18px}
+  .pasos{margin:16px 0 0;padding-left:1.4em;display:grid;gap:10px}
+  .pasos li{padding-left:4px}
+  .ico{display:inline-block;width:22px;height:22px;vertical-align:-5px;color:var(--accent)}
+  .app-no{display:block;margin:6px auto 0}
   [hidden]{display:none !important}
   @media (prefers-reduced-motion:no-preference){.btn,.op span{transition:background-color .15s,border-color .15s}}
 </style>
@@ -143,6 +169,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
+/* Este portal también es la pantalla de inicio de la app de Kairós (ver manifest.webmanifest, app.js y sw.js) */
 /* ===== Conexión con Supabase (la misma base que la app de gestión) =====
    La clave es la "Publishable key": es pública y solo permite llamar a las
    funciones portal_* creadas con portal-paciente.sql. Nunca poner acá la Secret key. */
@@ -232,23 +259,82 @@ async function cargarEquipos() {
   return S.equipos;
 }
 
-/* ===== Sesión: DNI y fecha quedan solo mientras la pestaña está abierta ===== */
-const guardarSesion = s => { S.sesion = s; try { s ? sessionStorage.setItem('kairos-portal', JSON.stringify(s)) : sessionStorage.removeItem('kairos-portal'); } catch (e) {} };
-const leerSesion = () => { try { return JSON.parse(sessionStorage.getItem('kairos-portal') || 'null'); } catch (e) { return null; } };
+/* ===== Sesión =====
+   Con "Recordarme en este celular" tildado, el DNI y la fecha quedan guardados en el teléfono
+   (así la app abre directo en tu portal). Sin tildar, duran solo mientras la pestaña está abierta.
+   "Salir" los borra siempre. */
+const CLAVE_SESION = 'kairos-portal';
+const guardarSesion = (s, recordar) => {
+  S.sesion = s;
+  try {
+    localStorage.removeItem(CLAVE_SESION); sessionStorage.removeItem(CLAVE_SESION);
+    if (s) (recordar ? localStorage : sessionStorage).setItem(CLAVE_SESION, JSON.stringify(s));
+  } catch (e) {}
+};
+const leerSesion = () => {
+  try {
+    const l = localStorage.getItem(CLAVE_SESION);
+    if (l) return Object.assign(JSON.parse(l), { recordar: true });
+    return JSON.parse(sessionStorage.getItem(CLAVE_SESION) || 'null');
+  } catch (e) { return null; }
+};
 
-async function ingresar(dni, fnac) {
+async function ingresar(dni, fnac, recordar) {
   const r = await llamar('portal_ingresar', { p_dni: dni, p_fnac: fnac });
   if (!r.ok) return r;
-  guardarSesion({ dni, fnac });
-  S.datos = r;
+  guardarSesion({ dni, fnac }, recordar);
+  S.datos = r; S.actualizado = Date.now();
   return r;
 }
 async function refrescar() {
   if (!S.sesion) return;
   const r = await llamar('portal_ingresar', { p_dni: S.sesion.dni, p_fnac: S.sesion.fnac });
-  if (r.ok) S.datos = r;
+  if (r.ok) { S.datos = r; S.actualizado = Date.now(); }
 }
 function salir() { guardarSesion(null); S.datos = null; ir('ingreso'); }
+
+/* ===== Tener Kairós como app en el celular (la lógica está en /app.js) ===== */
+const ICO_COMPARTIR = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const PASOS_APP = {
+  ios: `<ol class="pasos">
+      <li>Tocá el botón <b>Compartir</b> ${ICO_COMPARTIR}. En Safari está abajo; si no lo ves, tocá primero los tres puntitos <b>⋯</b>.</li>
+      <li>Bajá un poco y tocá <b>Agregar a inicio</b>.</li>
+      <li>Arriba a la derecha, tocá <b>Agregar</b>. Listo: te queda el ícono de Kairós en la pantalla.</li></ol>`,
+  android: `<ol class="pasos">
+      <li>Tocá el menú del navegador: los tres puntitos <b>⋮</b> de arriba a la derecha (o las tres rayitas <b>≡</b> de abajo).</li>
+      <li>Elegí <b>Instalar aplicación</b> o <b>Agregar a pantalla de inicio</b>.</li>
+      <li>Confirmá con <b>Instalar</b> o <b>Agregar</b>. Listo: te queda el ícono de Kairós en la pantalla.</li></ol>`,
+  webview: `<p style="margin-top:14px">Estás viendo el portal dentro de otra aplicación. Tocá los tres puntitos <b>⋯</b> y elegí <b>Abrir en el navegador</b>. Ahí vas a poder agregarlo a tu celular.</p>`
+};
+function bloqueApp() {
+  if (S.appLista) return `<div class="aviso info" role="status"><strong>¡Listo!</strong> Ya tenés Kairós en tu celular. Buscá el ícono en tu pantalla de inicio.</div>`;
+  const K = window.KairosApp;
+  const modo = K && !K.descartada() ? K.modo() : null;
+  if (!modo) return '';
+  const boton = modo === 'webview' ? '' : `<button class="btn pri ancho" id="btn-instalar"${modo === 'prompt' ? '' : ' aria-expanded="false" aria-controls="app-pasos"'}>Agregar a mi celular</button>`;
+  return `<section class="panel app-oferta" aria-labelledby="t-app">
+    <div class="app-fila"><img src="/icons/icon-192.png" alt=""/><h2 id="t-app">Tené Kairós en tu celular</h2></div>
+    <p style="margin-top:12px">Te queda un ícono en la pantalla, como cualquier app. Con un toque ves tus horarios y tu cuota.</p>
+    <p class="muted small" style="margin-top:6px">No hay que bajar nada de ninguna tienda y casi no ocupa lugar.</p>
+    ${boton}
+    <div id="app-pasos"${modo === 'webview' ? '' : ' hidden'}>${PASOS_APP[modo === 'prompt' ? 'android' : modo]}</div>
+    <button class="linkb app-no" id="btn-app-no">Ahora no</button>
+  </section>`;
+}
+const pintarOferta = () => { const b = $('app-oferta'); if (b) b.innerHTML = bloqueApp(); };
+async function onInstalar(b) {
+  const K = window.KairosApp;
+  if (K && K.modo() === 'prompt') {
+    const r = await K.instalar();
+    if (r === 'accepted') { S.appLista = true; pintarOferta(); }
+    return;
+  }
+  const p = $('app-pasos'), abrir = p.hidden;
+  p.hidden = !abrir; b.setAttribute('aria-expanded', String(abrir));
+  if (abrir) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+window.addEventListener('kairos-app', pintarOferta);
+window.addEventListener('appinstalled', () => { S.appLista = true; pintarOferta(); });
 
 /* ===== Navegación ===== */
 function ir(vista, extra) {
@@ -260,7 +346,7 @@ function ir(vista, extra) {
 }
 function pintar() {
   $('btn-salir').hidden = !S.datos;
-  app.innerHTML = ({ ingreso: vistaIngreso, inicio: vistaInicio, form: vistaForm, hecho: vistaHecho, cargando: () => '<p class="muted">Cargando…</p>' })[S.vista]();
+  app.innerHTML = ({ ingreso: vistaIngreso, inicio: vistaInicio, form: vistaForm, hecho: vistaHecho, sinred: vistaSinRed, cargando: () => '<p class="muted">Cargando…</p>' })[S.vista]();
 }
 
 /* ===== Ingreso ===== */
@@ -284,6 +370,7 @@ function vistaIngreso() {
         <div><label for="fa">Año</label><input id="fa" type="text" inputmode="numeric" maxlength="4" autocomplete="bday-year"/></div>
       </div>
     </div>
+    <label class="check"><input type="checkbox" id="recordar" checked/><span>Recordarme en este celular<small>Así no tenés que escribir tus datos cada vez que entrás. Si el celular lo usan otras personas, destildalo.</small></span></label>
     <div class="aviso mal" id="msg" role="alert"></div>
     <div class="fila-btn"><button class="btn pri ancho" id="btn-ingresar">Ingresar</button></div>
   </section>
@@ -313,7 +400,7 @@ async function onIngresar() {
   const fnac = a + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
   msg.textContent = ''; b.disabled = true; b.textContent = 'Ingresando…';
   try {
-    const r = await ingresar(dni, fnac);
+    const r = await ingresar(dni, fnac, $('recordar').checked);
     if (r.ok) return ir('inicio');
     msg.textContent = MOTIVOS[r.motivo] || MOTIVOS.no_coincide;
   } catch (e) { msg.textContent = textoError(e); }
@@ -391,6 +478,7 @@ function vistaInicio() {
   const D = S.datos, servs = D.servicios || [], sol = D.solicitudes || [];
   return `
   <h1>Hola, ${esc(nombrePila(D.nombre))}</h1>
+  <div id="app-oferta">${bloqueApp()}</div>
 
   <section class="bloque" style="margin-top:24px">
     <h2>Tu semana</h2>
@@ -540,6 +628,17 @@ function vistaHecho() {
   </section>`;
 }
 
+/* Se ve cuando la app abre con la sesión recordada pero no hay internet: no se borra la sesión */
+function vistaSinRed() {
+  return `
+  <h1>No pudimos conectarnos</h1>
+  <section class="panel" style="margin-top:24px">
+    <p>${esc(S.error || textoError())}</p>
+    <div class="fila-btn"><button class="btn pri ancho" id="btn-reintentar">Probar de nuevo</button></div>
+  </section>
+  ${pie()}`;
+}
+
 function pie() {
   return `<footer class="pie">
     <div><h3>¿Necesitás ayuda?</h3><p class="muted">Lunes a viernes de 8 a 20 y sábados de 9 a 14. Hipólito Yrigoyen 109, Nogoyá.</p></div>
@@ -557,6 +656,9 @@ document.addEventListener('click', e => {
   if (t.id === 'btn-volver') return ir(S.datos ? 'inicio' : 'ingreso');
   if (t.dataset.pedir) return abrirForm(t.dataset.pedir);
   if (t.dataset.cancelar) return onCancelar(t.dataset.cancelar);
+  if (t.id === 'btn-instalar') return onInstalar(t);
+  if (t.id === 'btn-app-no') { if (window.KairosApp) window.KairosApp.descartar(); return pintarOferta(); }
+  if (t.id === 'btn-reintentar') return arrancar();
 });
 document.addEventListener('input', e => {
   if (e.target.id === 'f-para' && $('para-dni-box')) $('para-dni-box').hidden = !e.target.value.trim();
@@ -570,16 +672,30 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && S.vista === 'ingreso' && e.target.matches('#dni, #fd, #fa')) onIngresar();
 });
 
+/* Al volver a la app después de un rato (quedó abierta de fondo), se traen los datos de nuevo */
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible' || S.vista !== 'inicio' || Date.now() - (S.actualizado || 0) < 120000) return;
+  try { await refrescar(); if (S.vista === 'inicio') pintar(); } catch (e) {}
+});
+
 /* ===== Arranque ===== */
-(async function () {
+async function arrancar() {
   const s = leerSesion();
   if (s && s.dni && s.fnac) {
     ir('cargando');
-    try { const r = await ingresar(s.dni, s.fnac); if (r.ok) return ir('inicio'); } catch (e) {}
-    guardarSesion(null);
+    let r;
+    try { r = await ingresar(s.dni, s.fnac, !!s.recordar); }
+    catch (e) { S.sesion = s; S.error = textoError(e); return ir('sinred'); }
+    if (r.ok) return ir('inicio');
+    /* Si los datos guardados dejaron de coincidir, se olvidan. Si es un bloqueo por intentos, se espera. */
+    if (r.motivo !== 'bloqueado') guardarSesion(null);
+    ir('ingreso');
+    $('msg').textContent = MOTIVOS[r.motivo] || MOTIVOS.no_coincide;
+    return;
   }
   ir('ingreso');
-})();
+}
+arrancar();
 </script>
 </body>
 </html>
