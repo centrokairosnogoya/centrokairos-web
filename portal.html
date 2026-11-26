@@ -105,6 +105,9 @@
   .aviso{margin-top:16px;padding:14px 16px;border-radius:var(--r-s);font-weight:500}
   .aviso.mal{background:var(--bad-bg);color:var(--bad)}
   .aviso.info{background:var(--tint);color:var(--ink)}
+  .seguro{padding:14px 16px 14px 52px;border-radius:var(--r-s);background:var(--warn-bg);color:var(--ink);position:relative;line-height:1.45}
+  .seguro::before{content:"🔒";position:absolute;left:16px;top:13px;font-size:1.3rem}
+  .seguro strong{display:block;color:var(--warn)}
   .aviso:empty{display:none}
 
   /* Semana */
@@ -755,8 +758,14 @@ function vistaSinRed() {
   ${pie()}`;
 }
 
+/* Contra estafas: aparece al pie de todas las pantallas del portal */
+const AVISO_ESTAFAS = `<div class="seguro" role="note"><strong>Cuidado con las estafas.</strong>
+    Kairós nunca te pide claves, códigos ni datos de tarjeta por mensaje. Si alguien te los pide en nuestro nombre,
+    no respondas.</div>`;
+
 function pie() {
   return `<footer class="pie">
+    ${AVISO_ESTAFAS}
     <div><h3>¿Necesitás ayuda?</h3><p class="muted">Lunes a viernes de 8 a 20 y sábados de 9 a 14. Hipólito Yrigoyen 109, Nogoyá.</p></div>
     <div><a class="btn wa" href="${waLink('Hola, Centro Kairós. Les escribo desde el portal del paciente.')}" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>
     <p class="small"><a href="/">Volver al sitio de Centro Kairós</a></p>
