@@ -152,6 +152,10 @@
   .pasos li{padding-left:4px}
   .ico{display:inline-block;width:22px;height:22px;vertical-align:-5px;color:var(--accent)}
   .app-no{display:block;margin:6px auto 0}
+
+  /* Avisos de turnos */
+  .avisos-ok{display:flex;gap:10px;align-items:flex-start;font-weight:600;color:var(--ok)}
+  .avisos-ok::before{content:"✓";flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ok-bg);font-weight:700}
   [hidden]{display:none !important}
   @media (prefers-reduced-motion:no-preference){.btn,.op span{transition:background-color .15s,border-color .15s}}
 </style>
@@ -291,7 +295,13 @@ async function refrescar() {
   const r = await llamar('portal_ingresar', { p_dni: S.sesion.dni, p_fnac: S.sesion.fnac });
   if (r.ok) { S.datos = r; S.actualizado = Date.now(); }
 }
-function salir() { guardarSesion(null); S.datos = null; ir('ingreso'); }
+function salir() {
+  /* Al salir, este celular deja de recibir los avisos de esa persona */
+  let marca = null; try { marca = localStorage.getItem('kairos-avisos'); } catch (e) {}
+  if (marca) apagarAvisos();
+  AV.estado = null; AV.msg = ''; AV.recien = false;
+  guardarSesion(null); S.datos = null; ir('ingreso');
+}
 
 /* ===== Tener Kairós como app en el celular (la lógica está en /app.js) ===== */
 const ICO_COMPARTIR = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -333,6 +343,109 @@ async function onInstalar(b) {
   p.hidden = !abrir; b.setAttribute('aria-expanded', String(abrir));
   if (abrir) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
+/* ===== Avisos 1 hora antes de cada turno =====
+   Los manda Supabase (función portal-avisos y tarea programada cada 5 minutos).
+   En iPhone solo funcionan con Kairós agregado a la pantalla de inicio. */
+const AVISOS_MARCA = 'kairos-avisos';
+const desdeB64u = s => { const t = String(s).replace(/-/g, '+').replace(/_/g, '/'); return Uint8Array.from(atob(t + '='.repeat((4 - t.length % 4) % 4)), c => c.charCodeAt(0)); };
+async function invocarAvisos(body) {
+  const { data, error } = await conectar().functions.invoke('portal-avisos', { body });
+  if (error) throw error;
+  return data || {};
+}
+const tieneTurnos = D => (D.servicios || []).some(s => ((s.dias || []).length && s.hora) || (s.turnos || []).length);
+const conTiempo = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error('tiempo')), ms))]);
+const AV = { estado: null, clave: null, reg: null, msg: '', revisando: false };
+
+async function revisarAvisos() {
+  if (AV.revisando || !S.datos) return;
+  AV.revisando = true;
+  try {
+    const K = window.KairosApp;
+    const soporta = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    if (!tieneTurnos(S.datos)) AV.estado = 'nada';
+    else if (!soporta) AV.estado = K && K.esIOS && !K.instalada() ? 'ios-instalar' : 'nada';
+    else {
+      if (!AV.clave) AV.clave = (await invocarAvisos({ accion: 'clave' })).clave;
+      if (!AV.reg) AV.reg = await conTiempo(navigator.serviceWorker.ready, 5000);
+      const sub = await AV.reg.pushManager.getSubscription();
+      let marca = null; try { marca = localStorage.getItem(AVISOS_MARCA); } catch (e) {}
+      if (Notification.permission === 'denied') AV.estado = 'bloqueado';
+      else if (sub && marca === soloNum(S.sesion.dni)) AV.estado = 'activo';
+      else if (AV.estado !== 'activando') AV.estado = AV.clave ? 'ofrecer' : 'nada';
+    }
+  } catch (e) { if (AV.estado !== 'activo') AV.estado = 'nada'; }
+  AV.revisando = false;
+  pintarAvisos();
+}
+
+function bloqueAvisos() {
+  const e = AV.estado;
+  if (!e || e === 'nada') return '';
+  let h = '';
+  if (e === 'ofrecer' || e === 'activando') h = `
+    <p>Te mandamos un aviso al celular 1 hora antes de cada turno, para que no se te pase.</p>
+    <div class="fila-btn"><button class="btn pri ancho" id="btn-avisos"${e === 'activando' ? ' disabled' : ''}>${e === 'activando' ? 'Activando…' : 'Avisarme antes de cada turno'}</button></div>`;
+  if (e === 'activo') h = `
+    <p class="avisos-ok">Avisos activados. Te avisamos 1 hora antes de cada turno.</p>
+    ${AV.recien ? '<p class="muted small" style="margin-top:8px">Te mandamos un aviso de prueba para que veas cómo llega.</p>' : ''}
+    <div class="fila-btn"><button class="btn sec ancho" id="btn-avisos-no">Dejar de recibir avisos</button></div>`;
+  if (e === 'bloqueado') h = `
+    <p>Las notificaciones de esta página están bloqueadas en este celular.</p>
+    <p class="muted small" style="margin-top:8px">Para recibir los avisos, permití las notificaciones de centrokairos.com.ar en los ajustes del navegador o del celular, y volvé a entrar.</p>`;
+  if (e === 'ios-instalar') h = `
+    <p>En iPhone, los avisos llegan cuando tenés Kairós en la pantalla de inicio.</p>
+    <p class="muted small" style="margin-top:8px">Agregalo a tu celular y abrilo desde el ícono: ahí vas a poder activarlos.</p>
+    <div class="fila-btn"><button class="btn sec ancho" id="btn-avisos-ios">Ver cómo agregarlo</button></div>`;
+  return `<section class="bloque" aria-labelledby="t-avisos"><h2 id="t-avisos">Avisos de tus turnos</h2>
+    <div class="panel" style="margin-top:12px">${h}<div class="aviso mal" id="msg-avisos" role="alert">${esc(AV.msg)}</div></div></section>`;
+}
+const pintarAvisos = () => { const b = $('avisos-box'); if (b) b.innerHTML = bloqueAvisos(); };
+
+async function onActivarAvisos() {
+  AV.msg = ''; AV.estado = 'activando'; pintarAvisos();
+  const opciones = { userVisibleOnly: true, applicationServerKey: desdeB64u(AV.clave) };
+  let sub;
+  try {
+    /* Se pide enseguida, dentro del toque: el celular muestra la pregunta de permiso */
+    sub = await AV.reg.pushManager.subscribe(opciones);
+  } catch (e) {
+    if (e && e.name === 'InvalidStateError') {
+      try { const vieja = await AV.reg.pushManager.getSubscription(); if (vieja) await vieja.unsubscribe(); sub = await AV.reg.pushManager.subscribe(opciones); } catch (e2) {}
+    }
+    if (!sub) {
+      AV.estado = Notification.permission === 'denied' ? 'bloqueado' : 'ofrecer';
+      AV.msg = AV.estado === 'bloqueado' ? '' : 'No se pudieron activar los avisos en este celular. Probá de nuevo.';
+      return pintarAvisos();
+    }
+  }
+  try {
+    const r = await invocarAvisos({ accion: 'activar', dni: S.sesion.dni, fnac: S.sesion.fnac, suscripcion: sub.toJSON(), navegador: navigator.userAgent.slice(0, 200) });
+    if (!r.ok) throw Object.assign(new Error('rechazado'), { motivo: r.motivo });
+    try { localStorage.setItem(AVISOS_MARCA, soloNum(S.sesion.dni)); } catch (e) {}
+    AV.estado = 'activo'; AV.recien = true;
+  } catch (e) {
+    await sub.unsubscribe().catch(() => {});
+    AV.estado = 'ofrecer';
+    AV.msg = e && e.motivo ? (MOTIVOS[e.motivo] || MOTIVOS.no_coincide) : textoError(e);
+  }
+  pintarAvisos();
+}
+
+async function apagarAvisos() {
+  try {
+    const reg = AV.reg || await navigator.serviceWorker.getRegistration();
+    const sub = reg && await reg.pushManager.getSubscription();
+    if (sub) { invocarAvisos({ accion: 'desactivar', endpoint: sub.endpoint }).catch(() => {}); await sub.unsubscribe(); }
+  } catch (e) {}
+  try { localStorage.removeItem(AVISOS_MARCA); } catch (e) {}
+}
+async function onDesactivarAvisos() {
+  AV.msg = ''; AV.recien = false;
+  await apagarAvisos();
+  AV.estado = 'ofrecer'; pintarAvisos();
+}
+
 window.addEventListener('kairos-app', pintarOferta);
 window.addEventListener('appinstalled', () => { S.appLista = true; pintarOferta(); });
 
@@ -347,6 +460,7 @@ function ir(vista, extra) {
 function pintar() {
   $('btn-salir').hidden = !S.datos;
   app.innerHTML = ({ ingreso: vistaIngreso, inicio: vistaInicio, form: vistaForm, hecho: vistaHecho, sinred: vistaSinRed, cargando: () => '<p class="muted">Cargando…</p>' })[S.vista]();
+  if (S.vista === 'inicio') revisarAvisos();
 }
 
 /* ===== Ingreso ===== */
@@ -486,6 +600,8 @@ function vistaInicio() {
     ${semana(servs)}
     <div style="margin-top:14px">${servs.map(tarjetaServicio).join('')}</div>
   </section>
+
+  <div id="avisos-box">${bloqueAvisos()}</div>
 
   ${seccionCuotas(D)}
 
@@ -659,6 +775,16 @@ document.addEventListener('click', e => {
   if (t.id === 'btn-instalar') return onInstalar(t);
   if (t.id === 'btn-app-no') { if (window.KairosApp) window.KairosApp.descartar(); return pintarOferta(); }
   if (t.id === 'btn-reintentar') return arrancar();
+  if (t.id === 'btn-avisos') return onActivarAvisos();
+  if (t.id === 'btn-avisos-no') return onDesactivarAvisos();
+  if (t.id === 'btn-avisos-ios') {
+    try { localStorage.removeItem('kairos-app-no'); } catch (e) {}
+    pintarOferta();
+    const p = $('app-pasos'), b = $('btn-instalar');
+    if (p) { p.hidden = false; if (b) b.setAttribute('aria-expanded', 'true'); }
+    const o = $('app-oferta'); if (o) o.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
 });
 document.addEventListener('input', e => {
   if (e.target.id === 'f-para' && $('para-dni-box')) $('para-dni-box').hidden = !e.target.value.trim();

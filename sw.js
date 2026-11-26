@@ -7,8 +7,8 @@
    Nunca guarda los datos de los pacientes: las consultas a Supabase pasan de largo.
 
    Si alguna vez la app queda "trabada" en una versión vieja, subí el número de VERSION. */
-const VERSION = 'kairos-v1';
-const BASICOS = ['/offline.html', '/icons/icon-192.png', '/icons/icon-512.png', '/images/img1.png'];
+const VERSION = 'kairos-v2';
+const BASICOS = ['/offline.html', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/badge-96.png', '/images/img1.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(BASICOS)).then(() => self.skipWaiting()));
@@ -28,6 +28,36 @@ async function limpia(resp) {
   const body = await resp.blob();
   return new Response(body, { status: resp.status, statusText: resp.statusText, headers: resp.headers });
 }
+
+/* ===== Avisos de turnos =====
+   Los manda Supabase (función portal-avisos) 1 hora antes de cada turno. Llegan aunque la app esté cerrada. */
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'Centro Kairós', {
+    body: d.body || '',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/badge-96.png',
+    tag: d.tag || undefined,
+    renotify: !!d.tag,
+    lang: 'es-AR',
+    data: { url: d.url || '/portal.html' }
+  }));
+});
+
+/* Al tocar el aviso se abre el portal (o se trae al frente si ya estaba abierto) */
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || '/portal.html', self.location.origin).href;
+  e.waitUntil((async () => {
+    const ventanas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const v = ventanas.find(c => c.url.startsWith(self.location.origin));
+    if (v) {
+      try { await v.focus(); if (!v.url.startsWith(url)) await v.navigate(url); return; } catch (err) {}
+    }
+    await self.clients.openWindow(url);
+  })());
+});
 
 self.addEventListener('fetch', e => {
   const req = e.request;
