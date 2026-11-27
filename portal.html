@@ -137,6 +137,14 @@
 
   .pedido{display:grid;gap:6px}
   .pedido .resp{margin-top:6px;padding:10px 12px;border-left:4px solid var(--sky);background:var(--tint);border-radius:0 8px 8px 0}
+  .fechas{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .fechas div{background:var(--tint);border-radius:var(--r-s);padding:10px 12px}
+  .fechas span{display:block;font-size:.85rem;color:var(--ink-2)}
+  .fechas b{display:block;font-size:1.05rem;line-height:1.3}
+
+  /* Banco de elementos ortopédicos (aviso al entrar) */
+  .banco{margin-top:24px;background:var(--tint-o);border-color:transparent}
+  .banco .btn{margin-top:18px}
 
   .volver{display:inline-block;margin-bottom:18px}
   .pie{margin-top:44px;padding-top:24px;border-top:1px solid var(--line);display:grid;gap:14px}
@@ -217,8 +225,24 @@ const $ = id => document.getElementById(id);
 const app = $('app');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const pesos = n => '$ ' + Math.round(+n || 0).toLocaleString('es-AR');
-const hoyISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const isoDe = f => f.getFullYear() + '-' + String(f.getMonth() + 1).padStart(2, '0') + '-' + String(f.getDate()).padStart(2, '0');
+const hoyISO = () => isoDe(new Date());
 const fechaCorta = iso => { if (!iso) return ''; const [a, m, d] = String(iso).slice(0, 10).split('-'); return +d + ' de ' + MESES[+m - 1] + (a !== String(new Date().getFullYear()) ? ' de ' + a : ''); };
+/* Día del celular en que se envió el pedido (la base lo guarda en hora universal) */
+const diaLocal = ts => { const f = new Date(ts); return isNaN(f) ? ts : isoDe(f); };
+/* Fecha de devolución: día de inicio + plazo del pedido ('15 días' o '1 mes'). Ej.: 1 de diciembre + 1 mes = 1 de enero */
+const sumarPlazo = (iso, dur) => {
+  if (!iso) return '';
+  const [a, m, d] = String(iso).slice(0, 10).split('-').map(Number), t = String(dur || '').toLowerCase();
+  let n = t.match(/(\d+)\s*d[ií]a/) || (/quincen/.test(t) && [0, 15]);
+  if (n) return isoDe(new Date(a, m - 1, d + +n[1]));
+  n = t.match(/(\d+)\s*semana/);
+  if (n) return isoDe(new Date(a, m - 1, d + 7 * n[1]));
+  n = t.match(/(\d+)\s*mes/) || (/mensual/.test(t) && [0, 1]);
+  if (n) { const k = m - 1 + +n[1]; return isoDe(new Date(a, k, Math.min(d, new Date(a, k + 1, 0).getDate()))); }
+  return '';
+};
+const diasHasta = iso => { const [a, m, d] = iso.split('-').map(Number), h = new Date(); return Math.round((new Date(a, m - 1, d) - new Date(h.getFullYear(), h.getMonth(), h.getDate())) / 864e5); };
 const horaCorta = h => { const m = String(h || '').match(/^(\d{1,2}):(\d{2})/); return m ? +m[1] + ':' + m[2] : String(h || ''); };
 const nombrePila = n => { const t = String(n || '').trim(); const p = t.includes(',') ? t.split(',')[1].trim() : t; return p.split(/\s+/)[0] || ''; };
 const soloNum = s => String(s || '').replace(/\D/g, '');
@@ -580,12 +604,25 @@ function seccionCuotas(D) {
   </section>`;
 }
 
+/* Inicio y devolución se muestran en los pedidos en curso, así el paciente y el centro se organizan */
+const EN_CURSO = ['pendiente', 'confirmado', 'entregado'];
+function fechasPedido(p) {
+  const fin = sumarPlazo(p.desde, p.duracion);
+  if (!p.desde || !fin || !EN_CURSO.includes(p.estado)) return '';
+  const n = diasHasta(fin);
+  const falta = p.estado !== 'entregado' || n < 0 ? '' : n === 0 ? 'Hoy es el día de devolución.' : n === 1 ? 'Falta 1 día para la devolución.' : `Faltan ${n} días para la devolución.`;
+  return `<div class="fechas"><div><span>Inicio</span><b>${fechaCorta(p.desde)}</b></div><div><span>Devolución</span><b>${fechaCorta(fin)}</b></div></div>
+    ${falta ? `<p style="font-weight:600">${falta}</p>` : ''}`;
+}
+
 function tarjetaPedido(p) {
   const [txt, cls] = ESTADO[p.estado] || [p.estado, 'neutro'];
-  const det = [p.desde ? 'Desde el ' + fechaCorta(p.desde) : '', p.duracion || ''].filter(Boolean).join(', ');
+  const fechas = fechasPedido(p);
+  const det = fechas ? (p.duracion ? 'Plazo: ' + p.duracion : '') : [p.desde ? 'Desde el ' + fechaCorta(p.desde) : '', p.duracion || ''].filter(Boolean).join(', ');
   return `<div class="panel pedido">
     <div class="par"><h3>${esc(p.equipo)}</h3><span class="chip ${cls}">${txt}</span></div>
-    <p class="muted small">Pedido N.º ${p.id}, enviado el ${fechaCorta(p.creado)}${det ? '. ' + esc(det) : ''}</p>
+    <p class="muted small">Pedido N.º ${p.id}, enviado el ${fechaCorta(diaLocal(p.creado))}${det ? '. ' + esc(det) : ''}</p>
+    ${fechas}
     ${p.respuesta ? `<p class="resp">${esc(p.respuesta)}</p>` : ''}
     ${p.estado === 'pendiente' ? `<div><button class="linkb" data-cancelar="${p.id}" style="padding-left:0">Cancelar este pedido</button></div>` : ''}
   </div>`;
@@ -596,6 +633,13 @@ function vistaInicio() {
   return `
   <h1>Hola, ${esc(nombrePila(D.nombre))}</h1>
   <div id="app-oferta">${bloqueApp()}</div>
+
+  <section class="panel banco" aria-labelledby="t-banco">
+    <h2 id="t-banco">Banco de elementos ortopédicos</h2>
+    <p style="margin-top:10px">Como cliente Kairós, podés pedir muletas, andadores, sillas de ruedas, bastones y más, <b>sin costo</b>.</p>
+    <p style="margin-top:8px">Podés tener cada elemento hasta <b>2 meses consecutivos</b> como máximo. Así van rotando y llegan a todos los que los necesitan.</p>
+    <button class="btn pri ancho" data-pedir="ortopedia">Pedir un elemento ortopédico</button>
+  </section>
 
   <section class="bloque" style="margin-top:24px">
     <h2>Tu semana</h2>
@@ -610,7 +654,7 @@ function vistaInicio() {
 
   <section class="bloque">
     <h2>Alquiler de equipos</h2>
-    <p class="muted">Como paciente del centro, tu pedido tiene prioridad sobre los equipos disponibles.</p>
+    <p class="muted">Como paciente del centro, tu pedido tiene prioridad. Los elementos ortopédicos son sin costo para vos.</p>
     <div class="fila-btn dos" style="margin-top:0">
       <button class="btn pri" data-pedir="ortopedia">Pedir elementos ortopédicos</button>
       <button class="btn pri" data-pedir="magnetoterapia">Pedir magnetoterapia</button>
@@ -641,10 +685,14 @@ function vistaForm() {
   const tipo = S.form.tipo, socio = !!S.datos, D = S.datos || {};
   const L = S.equipos.filter(e => e.tipo === tipo);
   const unico = L.length === 1;
+  /* Para los pacientes, los elementos ortopédicos salen del banco sin costo (máximo 2 meses consecutivos) */
+  const banco = socio && tipo === 'ortopedia';
   return `
   <button class="linkb volver" id="btn-volver" style="padding-left:0">Volver</button>
-  <h1>Alquilar ${TIPO[tipo]}</h1>
-  <p class="muted" style="margin-top:10px">Completá el pedido y te confirmamos por WhatsApp si el equipo está disponible y cuánto sale.</p>
+  <h1>${banco ? 'Pedir un elemento ortopédico' : 'Alquilar ' + TIPO[tipo]}</h1>
+  <p class="muted" style="margin-top:10px">${banco
+    ? 'Como cliente Kairós, es sin costo. Completá el pedido y te confirmamos por WhatsApp si el elemento está disponible.'
+    : 'Completá el pedido y te confirmamos por WhatsApp si el equipo está disponible y cuánto sale.'}</p>
 
   <section class="panel" style="margin-top:24px">
     ${socio ? '' : `
@@ -656,7 +704,7 @@ function vistaForm() {
     <div class="campo"${socio ? ' style="margin-top:0"' : ''}>
       <span class="lbl" id="l-eq">¿Qué equipo necesitás?</span>
       <div class="ops" role="radiogroup" aria-labelledby="l-eq">
-        ${L.map((e, i) => `<label class="op"><input type="radio" name="equipo" value="${esc(e.nombre)}"${unico && i === 0 ? ' checked' : ''}/><span><b style="font-weight:600">${esc(e.nombre)}${e.detalle || e.precio_texto ? `<small>${esc([e.detalle, e.precio_texto].filter(Boolean).join(', '))}</small>` : ''}</b></span></label>`).join('')}
+        ${L.map((e, i) => { const det = [e.detalle, banco ? '' : e.precio_texto].filter(Boolean).join(', '); return `<label class="op"><input type="radio" name="equipo" value="${esc(e.nombre)}"${unico && i === 0 ? ' checked' : ''}/><span><b style="font-weight:600">${esc(e.nombre)}${det ? `<small>${esc(det)}</small>` : ''}</b></span></label>`; }).join('')}
         <label class="op"><input type="radio" name="equipo" value="__otro"/><span>Otro</span></label>
       </div>
       <div id="otro-box" hidden style="margin-top:10px"><label for="f-otro">¿Cuál?</label><input id="f-otro" type="text" maxlength="120"/></div>
@@ -665,7 +713,8 @@ function vistaForm() {
     ${tipo === 'magnetoterapia' ? camposMagneto() : ''}
     <div class="campo"><label for="f-desde">¿Desde qué día?</label><input id="f-desde" type="date" min="${hoyISO()}" value="${hoyISO()}"/></div>
     <div class="campo"><span class="lbl" id="l-dur">¿Por cuánto tiempo?</span>
-      <div class="ops dos" role="radiogroup" aria-labelledby="l-dur">${DURACIONES.map(([v, t, d]) => `<label class="op"><input type="radio" name="dur" value="${v}"/><span><b style="font-weight:600">${t}<small>${d}</small></b></span></label>`).join('')}</div></div>
+      ${banco ? '<p class="ayuda" id="a-dur">En total, podés tenerlo hasta 2 meses consecutivos.</p>' : ''}
+      <div class="ops dos" role="radiogroup" aria-labelledby="l-dur"${banco ? ' aria-describedby="a-dur"' : ''}>${DURACIONES.map(([v, t, d]) => `<label class="op"><input type="radio" name="dur" value="${v}"/><span><b style="font-weight:600">${t}<small>${d}</small></b></span></label>`).join('')}</div></div>
 
     <div class="campo">
       <span class="lbl" id="l-dir">Dirección donde se va a usar</span>
@@ -721,7 +770,7 @@ async function onEnviar() {
       : await llamar('portal_pedir_alquiler_publico', { p_pedido: pedido });
     if (r.ok) {
       if (socio) { try { await refrescar(); } catch (e) {} }
-      return ir('hecho', { hecho: { id: r.id, equipo, nombre: socio ? D.nombre : pedido.nombre } });
+      return ir('hecho', { hecho: { id: r.id, equipo, tipo: S.form.tipo, nombre: socio ? D.nombre : pedido.nombre } });
     }
     msg.textContent = r.motivo === 'limite' && !socio ? 'Ya recibimos varios pedidos desde este teléfono. Escribinos por WhatsApp y lo vemos.' : (MOTIVOS[r.motivo] || MOTIVOS.faltan_datos);
     if (r.motivo === 'no_coincide' || r.motivo === 'inactivo') { salir(); return; }
@@ -730,15 +779,18 @@ async function onEnviar() {
 }
 
 function vistaHecho() {
-  const h = S.hecho;
-  const txt = `Hola, soy ${h.nombre}. Acabo de pedir el alquiler de ${h.equipo} desde la web (pedido N.º ${h.id}).`;
+  const h = S.hecho, banco = !!S.datos && h.tipo === 'ortopedia';
+  const txt = banco
+    ? `Hola, soy ${h.nombre}. Acabo de pedir del banco de elementos ortopédicos: ${h.equipo} (pedido N.º ${h.id}).`
+    : `Hola, soy ${h.nombre}. Acabo de pedir el alquiler de ${h.equipo} desde la web (pedido N.º ${h.id}).`;
   return `
   <h1>Recibimos tu pedido</h1>
   <section class="panel" style="margin-top:24px">
     <p><strong>${esc(h.equipo)}</strong>, pedido N.º ${h.id}.</p>
-    <p style="margin-top:10px">${S.datos
-      ? 'Te confirmamos disponibilidad y precio por WhatsApp, y también vas a ver la respuesta acá, en Tus pedidos.'
-      : 'La respuesta no se ve en esta página: te la mandamos por WhatsApp al número que dejaste, con la disponibilidad y el precio.'}</p>
+    <p style="margin-top:10px">${!S.datos
+      ? 'La respuesta no se ve en esta página: te la mandamos por WhatsApp al número que dejaste, con la disponibilidad y el precio.'
+      : (banco ? 'Te confirmamos por WhatsApp si está disponible' : 'Te confirmamos disponibilidad y precio por WhatsApp')
+        + ', y también vas a ver la respuesta acá, en Tus pedidos, con la fecha de inicio y la de devolución.'}</p>
     <p style="margin-top:10px">Para que lo veamos enseguida, avisanos con el botón de abajo.</p>
     <div class="fila-btn">
       <a class="btn wa ancho" href="${waLink(txt)}" target="_blank" rel="noopener">Avisar por WhatsApp</a>
