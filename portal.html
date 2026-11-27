@@ -564,7 +564,7 @@ function seccionCuotas(D) {
     /* Antes del primer mes que se cobra en el sistema nuevo, se anuncia la sección en vez de ocultarla */
     if (hoyISO().slice(0, 7) + '-01' >= CUOTAS_DESDE) return '';
     return `<section class="bloque"><div class="par"><h2>Tus cuotas</h2><span class="chip neutro">Próximamente</span></div>
-      <div class="panel" style="margin-top:14px"><p>Desde ${MESES[+CUOTAS_DESDE.slice(5, 7) - 1]} vas a ver acá si tu cuota está paga o pendiente, y los meses que te falten pagar.</p></div></section>`;
+      <div class="panel" style="margin-top:14px"><p>Desde ${MESES[+CUOTAS_DESDE.slice(5, 7) - 1]} vas a ver si tus cuotas están pagas o pendientes.</p></div></section>`;
   }
   const falta = x => Math.max(0, x.imp - x.pag), deben = ver.filter(x => falta(x) > 0), total = deben.reduce((n, x) => n + falta(x), 0);
   const fila = x => {
