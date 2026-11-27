@@ -370,8 +370,10 @@ async function onInstalar(b) {
   p.hidden = !abrir; b.setAttribute('aria-expanded', String(abrir));
   if (abrir) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
-/* ===== Avisos 1 hora antes de cada turno =====
-   Los manda Supabase (función portal-avisos y tarea programada cada 5 minutos).
+/* ===== Avisos al celular =====
+   1 hora antes de cada turno, el último día del mes y, si tiene un elemento ortopédico,
+   2 días antes de la devolución (y antes de cumplir el máximo de 2 meses).
+   Los manda Supabase (función portal-avisos y tarea programada cada 1 hora).
    En iPhone solo funcionan con Kairós agregado a la pantalla de inicio. */
 const AVISOS_MARCA = 'kairos-avisos';
 const desdeB64u = s => { const t = String(s).replace(/-/g, '+').replace(/_/g, '/'); return Uint8Array.from(atob(t + '='.repeat((4 - t.length % 4) % 4)), c => c.charCodeAt(0)); };
@@ -381,6 +383,7 @@ async function invocarAvisos(body) {
   return data || {};
 }
 const tieneTurnos = D => (D.servicios || []).some(s => ((s.dias || []).length && s.hora) || (s.turnos || []).length);
+const tieneElemento = D => (D.solicitudes || []).some(p => p.tipo === 'ortopedia' && ['pendiente', 'confirmado', 'entregado'].includes(p.estado));
 const conTiempo = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error('tiempo')), ms))]);
 const AV = { estado: null, clave: null, reg: null, msg: '', revisando: false };
 
@@ -390,7 +393,7 @@ async function revisarAvisos() {
   try {
     const K = window.KairosApp;
     const soporta = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
-    if (!tieneTurnos(S.datos)) AV.estado = 'nada';
+    if (!tieneTurnos(S.datos) && !tieneElemento(S.datos)) AV.estado = 'nada';
     else if (!soporta) AV.estado = K && K.esIOS && !K.instalada() ? 'ios-instalar' : 'nada';
     else {
       if (!AV.clave) AV.clave = (await invocarAvisos({ accion: 'clave' })).clave;
@@ -411,10 +414,10 @@ function bloqueAvisos() {
   if (!e || e === 'nada') return '';
   let h = '';
   if (e === 'ofrecer' || e === 'activando') h = `
-    <p>Te mandamos un aviso al celular 1 hora antes de cada turno, para que no se te pase.</p>
+    <p>Te mandamos un aviso al celular 1 hora antes de cada turno, para que no se te pase. Si tenés un elemento ortopédico, también te avisamos antes de la fecha de devolución.</p>
     <div class="fila-btn"><button class="btn pri ancho" id="btn-avisos"${e === 'activando' ? ' disabled' : ''}>${e === 'activando' ? 'Activando…' : 'Avisarme antes de cada turno'}</button></div>`;
   if (e === 'activo') h = `
-    <p class="avisos-ok">Avisos activados. Te avisamos 1 hora antes de cada turno.</p>
+    <p class="avisos-ok">Avisos activados. Te avisamos 1 hora antes de cada turno y antes de cada devolución.</p>
     ${AV.recien ? '<p class="muted small" style="margin-top:8px">Te mandamos un aviso de prueba para que veas cómo llega.</p>' : ''}
     <div class="fila-btn"><button class="btn sec ancho" id="btn-avisos-no">Dejar de recibir avisos</button></div>`;
   if (e === 'bloqueado') h = `
@@ -424,7 +427,7 @@ function bloqueAvisos() {
     <p>En iPhone, los avisos llegan cuando tenés Kairós en la pantalla de inicio.</p>
     <p class="muted small" style="margin-top:8px">Agregalo a tu celular y abrilo desde el ícono: ahí vas a poder activarlos.</p>
     <div class="fila-btn"><button class="btn sec ancho" id="btn-avisos-ios">Ver cómo agregarlo</button></div>`;
-  return `<section class="bloque" aria-labelledby="t-avisos"><h2 id="t-avisos">Avisos de tus turnos</h2>
+  return `<section class="bloque" aria-labelledby="t-avisos"><h2 id="t-avisos">Avisos al celular</h2>
     <div class="panel" style="margin-top:12px">${h}<div class="aviso mal" id="msg-avisos" role="alert">${esc(AV.msg)}</div></div></section>`;
 }
 const pintarAvisos = () => { const b = $('avisos-box'); if (b) b.innerHTML = bloqueAvisos(); };
